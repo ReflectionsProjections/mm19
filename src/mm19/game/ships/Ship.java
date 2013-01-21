@@ -11,7 +11,7 @@ public abstract class Ship {
 
 	// x,y passed to cstructor - cstructor sets other vars on super class
 	
-	private final int typeID; 	    // [Presumption] Type of ship
+	private final int uId; 	    // [Presumption] Type of ship
 	private int x;       			// X coordinate of ship on board
 	private int y;					// Y coordinate of ship on board
 	private final int boatLength;   // Length of the boat (boats are always of width 1)
@@ -23,9 +23,9 @@ public abstract class Ship {
 	public static enum Orientation { HORIZONTAL, VERTICAL }
 	
 	// Constructor
-	public Ship(int typeID, int boatLength) // x, y, orientation - g/s
+	public Ship(int uID, int boatLength) // x, y, orientation - g/s
 	{
-		this.typeID = typeID;
+		this.uId = uID;
 		this.boatLength = boatLength;
 	}
 	
@@ -44,6 +44,16 @@ public abstract class Ship {
 		return this.orientation;
 	}
 	
+	public int getLength()
+	{
+		return this.boatLength;
+	}
+	
+	public int getID()
+	{
+		return this.uId;
+	}
+	
 	// ---- Setters ----
 	public void setX(int x)
 	{
@@ -60,4 +70,16 @@ public abstract class Ship {
 		this.orientation = o;
 	}
 	
+	// ---- Damage ----
+	public int applyDamage(int damage)
+	{
+		// If damage is <= 0, nothing happens
+		this.health -= Math.max(damage, 0);
+		
+		// Update isAlive
+		this.isAlive = (this.health > 0);
+		
+		// Return health
+		return this.health;
+	}
 }
