@@ -147,18 +147,7 @@ public class Board {
         }  
     }
 
-	public boolean placeShip(Ship ship) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	public void reset() {
-		// TODO Auto-generated method stub
-		
-	}
 
-	public int shipCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-}
+
+
