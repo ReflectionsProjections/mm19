@@ -4,9 +4,16 @@ package mm19.game.ships;
  * 
  * @author mm19
  * 
- * Can be spawned by the MainShip, can only move, but gathers resources.
+ * Pilot ships can only move, but gather resources.
+ * Type: 2
+ * Length: 2
  *
  */
 public class PilotShip extends Ship{
-
+	public PilotShip(int x, int y, Orientation o){
+		super(2,2);
+		setX(x);
+		setY(y);
+		setOrientation(o);
+	}
 }
