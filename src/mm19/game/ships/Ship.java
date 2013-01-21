@@ -1,7 +1,5 @@
 package mm19.game.ships;
 
-import java.awt.geom.Point2D;
-
 /**
  * 
  * @author mm19
