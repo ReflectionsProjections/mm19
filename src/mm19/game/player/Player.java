@@ -19,7 +19,6 @@ public class Player {
     final private int playerID;
 
     private Board board = new Board();
-    private boolean canSpecial = true;
     private int resources;
 
     /**
@@ -31,7 +30,6 @@ public class Player {
     public Player(int resources) {
         playerID = nextPlayerID;
         nextPlayerID++;
-
         this.resources = resources;
     }
 
@@ -68,7 +66,7 @@ public class Player {
      *
      * @return True if the player still has a MainShip, false otherwise.
      */
-    private boolean isAlive() {
+    public boolean isAlive() {
         ArrayList<Ship> ships = board.getShips();
         for (Ship ship : ships) {
             if (ship instanceof MainShip) {
@@ -76,5 +74,52 @@ public class Player {
             }
         }
         return false;
+    }
+    
+    /**
+     * Returns the ID of the player
+     * 
+     * @return playerID
+     */
+    
+    public int getPlayerID(){
+    	return this.playerID;
+    }    
+    /**
+     * Sets the resources for the player
+     * 
+     * @param resources	An int as the number of resources to be added
+     */
+    public void setResources(int resources){
+    	this.resources = resources;
+    }
+    
+    /**
+     * Returns the current resources the player has
+     * 
+     * @return number of resources the player has
+     */    
+    public int getResources(){
+    	return this.resources;
+    }
+    
+    /**
+     * @return the player's board
+     */
+    public Board getBoard(){
+    	return this.board;
+    }
+    
+    /**
+     * Subtracts resources from the player's total resources
+     * @param resources	Number of resources to be subtracted
+     * @return True of successful and false if not
+     */
+    public boolean chargePlayer(int resources){
+    	if(this.resources >= resources){
+    		this.resources -= resources;
+    		return true;
+    	}
+    	return false;
     }
 }
