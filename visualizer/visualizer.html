@@ -1,0 +1,29 @@
+
+<html>
+    <head>
+        <style type="text/css">
+            #paper {
+                position: absolute;
+                top: 60px;
+                left: 20px;
+                
+                padding: 10;
+                 
+                width:580px;
+                height:380px;
+            }
+        </style>
+    </head>
+    <body>
+        <input id="runLogButton" disabled type="button" value="Run Game" onclick="visualizeGame()" />
+        <input type="file" id="jsonInput" name="json" />
+        <output id="list"></output>
+        <div id="paper"/>
+        <pre>
+            <script src ="json_parse.js"></script>
+            <script src ="raphael.js"></script>
+            <script src ="visualizer.js"></script>
+        </pre>
+    </body>
+</html>
+
