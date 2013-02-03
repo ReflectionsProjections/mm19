@@ -19,7 +19,7 @@ public class PlayerTests {
 	@Test
 	public void testPlayerContructor() {
 		Player testPlayer = new Player(10);
-		assertEquals("Initial resources does not mach player initial resources", 
+		assertEquals("Initial resource amount does not match player's initial resources", 
 				testPlayer.getResources(), 10);
 		assertEquals("playerID does not match original nextPlayerID (should be 0)",
 				testPlayer.getPlayerID(), 0);
