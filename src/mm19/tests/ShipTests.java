@@ -44,15 +44,11 @@ public class ShipTests {
 		// Test negative damage
 		ms = new MainShip();
 		ms.applyDamage(-MainShip.HEALTH);
-		assertEquals(ms.getHealth(),MainShip.HEALTH*2);
-		assertTrue(ms.isAlive());
-		
-		// - Kill half the ship -
-		ms.applyDamage(MainShip.HEALTH);
 		assertEquals(ms.getHealth(),MainShip.HEALTH);
 		assertTrue(ms.isAlive());
 		
-		// Kill the other half
+		// - Kill the ship -
+		ms.applyDamage(MainShip.HEALTH);
 		assertEquals(ms.getHealth(),0);
 		assertFalse(ms.isAlive());
 		
@@ -74,7 +70,7 @@ public class ShipTests {
 		// Test constructor
 		DestroyerShip ms = new DestroyerShip();
 		assertFalse(ms == null);
-		assertEquals(ms.HEALTH, ms.getHealth());
+		assertEquals(DestroyerShip.HEALTH, ms.getHealth());
 		
 		// Test slow death
 		ms.applyDamage(5);
@@ -100,15 +96,11 @@ public class ShipTests {
 		// Test negative damage
 		ms = new DestroyerShip();
 		ms.applyDamage(-MainShip.HEALTH);
-		assertEquals(ms.getHealth(),DestroyerShip.HEALTH*2);
-		assertTrue(ms.isAlive());
-		
-		// - Kill half the ship -
-		ms.applyDamage(DestroyerShip.HEALTH);
 		assertEquals(ms.getHealth(),DestroyerShip.HEALTH);
 		assertTrue(ms.isAlive());
 		
-		// Kill the other half
+		// - Kill the ship -
+		ms.applyDamage(DestroyerShip.HEALTH);
 		assertEquals(ms.getHealth(),0);
 		assertFalse(ms.isAlive());
 		
@@ -154,18 +146,14 @@ public class ShipTests {
 		ms.applyDamage(PilotShip.HEALTH*2);
 		assertFalse(ms.isAlive());
 		
-		// Test negative damage
+		// Test negative damage (it shouldn't make a difference in health)
 		ms = new PilotShip();
 		ms.applyDamage(-PilotShip.HEALTH);
-		assertEquals(ms.getHealth(),PilotShip.HEALTH*2);
-		assertTrue(ms.isAlive());
-		
-		// - Kill half the ship -
-		ms.applyDamage(PilotShip.HEALTH);
 		assertEquals(ms.getHealth(),PilotShip.HEALTH);
 		assertTrue(ms.isAlive());
 		
-		// Kill the other half
+		// - Kill the ship -
+		ms.applyDamage(PilotShip.HEALTH);
 		assertEquals(ms.getHealth(),0);
 		assertFalse(ms.isAlive());
 		
