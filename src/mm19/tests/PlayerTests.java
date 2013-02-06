@@ -21,8 +21,13 @@ public class PlayerTests {
 		Player testPlayer = new Player(10);
 		assertEquals("Initial resource amount does not match player's initial resources", 
 				testPlayer.getResources(), 10);
+		
+		/* 
+		 * this test is broken as it assumes that this tests runs first but junit has no
+		 * method to ensure as tests are run asynchronously 
+		 * 
 		assertEquals("playerID does not match original nextPlayerID (should be 0)",
-				testPlayer.getPlayerID(), 0);
+				0, testPlayer.getPlayerID());*/
 	}
 	
 	/*
