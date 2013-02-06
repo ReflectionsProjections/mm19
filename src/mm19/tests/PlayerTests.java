@@ -21,33 +21,22 @@ public class PlayerTests {
 		Player testPlayer = new Player(10);
 		assertEquals("Initial resource amount does not match player's initial resources", 
 				testPlayer.getResources(), 10);
-		
-		/* 
-		 * this test is broken as it assumes that this tests runs first but junit has no
-		 * method to ensure as tests are run asynchronously 
-		 * 
-		assertEquals("playerID does not match original nextPlayerID (should be 0)",
-				0, testPlayer.getPlayerID());*/
+
+        //TODO The value of playerIDs are dependant on the order of tests being run.  Commenting out this test.
+        /* assertEquals("playerID does not match original nextPlayerID (should be 0)",
+		 *		testPlayer.getPlayerID(), 0);
+		 */
 	}
 	
-	/*
-	 * TODO: Implement these Board Setup test cases.  
-	 * Not entirely sure how to set up the two ArrayLists for this.
-	 
 	@Test
-	public void testSetupBoard() {
-		return;
-	}*/
-	
-	@Test
-	public void testChargePlayer() {
+	public void testTakeResources() {
 		Player testPlayer = new Player(10);
-		boolean charged = testPlayer.chargePlayer(6);
+		boolean charged = testPlayer.takeResources(6);
 		assertTrue("chargePlayer returned false",
 				charged);
 		assertEquals("Player wasn't correctly charged",
 				testPlayer.getResources(), 4);
-		boolean overCharge = testPlayer.chargePlayer(10);
+		boolean overCharge = testPlayer.takeResources(10);
 		assertFalse("Player was charged with insufficient resources",
 				overCharge);
 		assertEquals("Player was charged more than the number of resources they have",

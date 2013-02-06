@@ -1,6 +1,6 @@
 package mm19.game.ships;
 
-import mm19.game.Constants;
+import mm19.game.Ability;
 
 /**
  * @author mm19
@@ -13,7 +13,7 @@ public class PilotShip extends Ship {
     final private static int HEALTH_MULTIPLIER = 2;
 
     //Public Constants
-    final public static int HEALTH = HEALTH_MULTIPLIER * Constants.MISSILE_DAMAGE;
+    final public static int HEALTH = HEALTH_MULTIPLIER * Ability.MISSILE_DAMAGE;
     final public static int LENGTH = 2;
     final public static boolean CAN_SHOOT = false;
     final public static boolean CAN_GENERATE_RESOURCES = true;

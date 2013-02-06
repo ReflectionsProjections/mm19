@@ -33,34 +33,6 @@ public class Player {
         this.resources = resources;
     }
 
-    /*
-     * TODO: Eric made an assumption that ship Positions could be passed in as a parallel ArrayList.
-     * If you would prefer a different implementation, please change this method accordingly.
-     * If this implementation is fine, then just remove this comment.
-     */
-
-    /**
-     * Attempts to place the player's starting ships in their requested positions.
-     *
-     * @param ships     An ArrayList containing the ships to place
-     * @param positions An ArrayList containing Positions indicating where the ships should be placed.
-     * @return The player's Board if the placements were successful, null otherwise
-     */
-    public Board setupBoard(ArrayList<Ship> ships, ArrayList<Position> positions) {
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            Position position = positions.get(i);
-
-            boolean shipPlaced = board.placeShip(ship, position);
-
-            if (!shipPlaced) {
-                board.reset();
-                return null;
-            }
-        }
-        return board;
-    }
-
     /**
      * Reports whether or not the player still lives
      *
@@ -115,11 +87,22 @@ public class Player {
      * @param resources	Number of resources to be subtracted
      * @return True of successful and false if not
      */
-    public boolean chargePlayer(int resources){
+    public boolean takeResources(int resources){
     	if(this.resources >= resources){
     		this.resources -= resources;
     		return true;
     	}
     	return false;
+    }
+
+    /**
+     * Adds resources to the player's total resources
+     * @param resources	Number of resources to be subtracted
+     * @return True of successful and false if not
+     */
+    public void giveResources(int resources){
+        if(0 < resources){
+            this.resources += resources;
+        }
     }
 }

@@ -1,6 +1,6 @@
 package mm19.game.ships;
 
-import mm19.game.Constants;
+import mm19.game.Ability;
 
 /**
  * @author mm19
@@ -10,10 +10,10 @@ import mm19.game.Constants;
  */
 public class DestroyerShip extends Ship {
     //Private Constants
-    final private static int HEALTH_MULTIPLIER = 3;
+    final private static int HEALTH_MULTIPLIER = 4;
 
     //Public Constants
-    final public static int HEALTH = HEALTH_MULTIPLIER * Constants.MISSILE_DAMAGE;
+    final public static int HEALTH = HEALTH_MULTIPLIER * Ability.MISSILE_DAMAGE;
     final public static int LENGTH = 4;
     final public static boolean CAN_SHOOT = true;
     final public static boolean CAN_GENERATE_RESOURCES = false;

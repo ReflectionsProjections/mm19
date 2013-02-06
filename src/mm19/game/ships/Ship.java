@@ -1,6 +1,6 @@
 package mm19.game.ships;
 
-import mm19.game.Constants;
+import mm19.game.Ability;
 
 /**
  * @author mm19
@@ -85,7 +85,7 @@ public abstract class Ship {
      * @return Number of resources needed to move ship
      */
     public int getMoveCost() {
-        return getLength() * Constants.MOVE_COST_PER_UNIT_LENGTH;
+        return getLength() * Ability.MOVE_COST_PER_UNIT_LENGTH;
     }
 
     /**
