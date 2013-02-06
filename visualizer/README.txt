@@ -6,7 +6,7 @@ Log files are loaded by the browser.
 
 An example log can be found in test_log.json.
 The main idea is it contatins the board configuration and an array of turns, the same turns the server sends to players.
-There must be at least two turns to setup the initial configuration of the board.
+There must be at least two turns in the log to setup the initial configuration of the board.
 
 
 LIBRARIES:
@@ -14,11 +14,13 @@ LIBRARIES:
     Uses json_parse.js to parse the log.
 
 TODO:
+    switch to using MVC design pattern
+    redesign log format
     add effects for sonar, shots, and burst shots
-    *gracefully* deal with valid JSON this is an invalid log
+    add animations for movement
 
 BUGS:
-    if Run Game button is pressed while a game is already running, there are problems with animation
+    Happy to report, none at the moment.
 
 
 
