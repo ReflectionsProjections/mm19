@@ -13,6 +13,7 @@ public abstract class Ship {
     final private int ID;
     final private int length;
 
+    private boolean abilityUsed = false;
     private int health;
 
     /**
@@ -86,6 +87,28 @@ public abstract class Ship {
      */
     public int getMoveCost() {
         return getLength() * Ability.MOVE_COST_PER_UNIT_LENGTH;
+    }
+
+    /**
+     * Indicates whether the ship has used an ability in the current turn
+     * @return True if the ship has used an ability, false otherwise
+     */
+    public boolean hasUsedAbility() {
+        return abilityUsed;
+    }
+
+    /**
+     * Sets state indicating the ship has used an ability
+     */
+    public void useAbility() {
+        abilityUsed = true;
+    }
+
+    /**
+     * Resets ship ability
+     */
+    public void resetAbility() {
+        abilityUsed = false;
     }
 
     /**

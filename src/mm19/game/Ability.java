@@ -14,11 +14,6 @@ import java.util.ArrayList;
  *         Time: 9:05 PM
  *
  *         Static methods to interact with the game elements
- *
- *         TODO: Please note that this class currently does ***NOT*** check or update whether or not a ship
- *         has used up an ability for the turn. The Ship class needs to allow tracking of this info, and
- *         this class needs to be updated to use the new methods.  In particular, a resetShipAbilities
- *         function would be nice for when a turn begins.
  */
 public class Ability {
     final public static int MISSILE_DAMAGE = 10;
@@ -37,6 +32,20 @@ public class Ability {
     enum Type {SHOOT, BURST_SHOT, MOVE, SONAR}
 
     /**
+     * Resets the abilities of the player and their ships.
+     * @param player The player to reset abilities on.
+     */
+    public static void resetAbilityStates(Player player){
+        player.resetSpecialAbility();
+        Board board = player.getBoard();
+        ArrayList<Ship> ships = board.getShips();
+        for(Ship ship : ships) {
+            ship.resetAbility();
+        }
+    }
+
+
+    /**
      * Updates the player's resources by polling the boats they own for resources generated.
      *
      * @param player The player to update the resources of
@@ -45,7 +54,9 @@ public class Ability {
         Board board = player.getBoard();
         ArrayList<Ship> ships = board.getShips();
         for (Ship ship : ships) {
-            player.giveResources(ship.getResources());
+            if(ship.canGenerateResources()) {
+                player.giveResources(ship.getResources());
+            }
         }
     }
 
@@ -78,15 +89,23 @@ public class Ability {
      *
      * @param attackingPlayer The player taking the shot
      * @param targetPlayer    The player who is being shot at
+     * @param shipID          ID of the ship attacking
      * @param targetX         The x coordinate to attack
      * @param targetY         The y coordinate to attack
      * @return Null if the attackingPlayer did not have enough resources, a HitReport otherwise.
      */
-    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int targetX, int targetY) {
+    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+        Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
+        if(!attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
+            return null;
+        }
+
         boolean hadResources = attackingPlayer.takeResources(MISSILE_COST);
         if (!hadResources) {
             return null;
         }
+
+        attackingShip.useAbility();
 
         Board board = targetPlayer.getBoard();
         Ship targetShip = board.getShip(targetX, targetY);
@@ -113,13 +132,21 @@ public class Ability {
         Board board = player.getBoard();
         Ship ship = board.getShip(shipId);
 
+        if(player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
+            return false;
+        }
+
         boolean hadResources = player.takeResources(ship.getMoveCost());
         if (!hadResources) {
             return false;
         }
 
         boolean moveSuccessful = board.moveShip(shipId, newPosition);
-        if (!moveSuccessful) {
+        if (moveSuccessful) {
+            player.useSpecialAbility();
+            ship.useAbility();
+        } else {
+            //Refund the player as the move was not possible
             player.giveResources(ship.getMoveCost());
         }
         return moveSuccessful;
@@ -130,16 +157,27 @@ public class Ability {
      *
      * @param attackingPlayer The player taking a shot
      * @param targetPlayer    The player being shot at
+     * @param shipID          The ID of the ship using burst shot
      * @param targetX         The x coordinate to shoot at
      * @param targetY         The y coordinate to shoot at
      * @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
      */
     public static ArrayList<HitReport>
-    burstShot(Player attackingPlayer, Player targetPlayer, int targetX, int targetY) {
+    burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+        Board attackersBoard = attackingPlayer.getBoard();
+        Ship attackingShip = attackersBoard.getShip(shipID);
+
+        if(attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
+            return null;
+        }
+
         boolean hadResources = attackingPlayer.takeResources(BURST_SHOT_COST);
         if (!hadResources) {
             return null;
         }
+
+        attackingShip.useAbility();
+        attackingPlayer.useSpecialAbility();
 
         ArrayList<HitReport> hitReports = new ArrayList<HitReport>();
         Board board = targetPlayer.getBoard();
@@ -171,16 +209,26 @@ public class Ability {
      *
      * @param attackingPlayer The player using sonar
      * @param targetPlayer    The player being pinged by sonar
+     * @param shipID          The ID of the ship using sonar
      * @param targetX         The x coordinate to use sonar on
      * @param targetY         The y coordinate to use sonar on
      * @return Null if attackingPlayer didn't have enough resources, a list of ship distances otherwise
      */
     public static ArrayList<SonarReport>
-    sonar(Player attackingPlayer, Player targetPlayer, int targetX, int targetY) {
+    sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+        Board attackersBoard = attackingPlayer.getBoard();
+        Ship attackingShip = attackersBoard.getShip(shipID);
+        if(attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
+            return null;
+        }
+
         boolean hadResources = attackingPlayer.takeResources(SONAR_COST);
         if (!hadResources) {
             return null;
         }
+
+        attackingPlayer.useSpecialAbility();
+        attackingShip.useAbility();
 
         ArrayList<SonarReport> sonarReports = new ArrayList<SonarReport>();
         Board board = targetPlayer.getBoard();

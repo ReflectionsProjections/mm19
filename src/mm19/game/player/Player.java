@@ -20,6 +20,7 @@ public class Player {
 
     private Board board = new Board();
     private int resources;
+    private boolean specialUsed = false;
 
     /**
      * Constructor
@@ -46,6 +47,28 @@ public class Player {
             }
         }
         return false;
+    }
+
+    /**
+     * Indicates whether or not the player has used up their special ability this turn
+     * @return True if they have used their special ability, false otherwise
+     */
+    public boolean hasUsedSpecial() {
+        return specialUsed;
+    }
+
+    /**
+     * Set state indicating that the player has used their special ability
+     */
+    public void useSpecialAbility() {
+        specialUsed = true;
+    }
+
+    /**
+     * Set state indicating that the player has their special ability available again
+     */
+    public void resetSpecialAbility() {
+        specialUsed = false;
     }
     
     /**
