@@ -21,11 +21,6 @@ public class PlayerTests {
 		Player testPlayer = new Player(10);
 		assertEquals("Initial resource amount does not match player's initial resources", 
 				testPlayer.getResources(), 10);
-
-        //TODO The value of playerIDs are dependant on the order of tests being run.  Commenting out this test.
-        /* assertEquals("playerID does not match original nextPlayerID (should be 0)",
-		 *		testPlayer.getPlayerID(), 0);
-		 */
 	}
 	
 	@Test
@@ -42,6 +37,39 @@ public class PlayerTests {
 		assertEquals("Player was charged more than the number of resources they have",
 				testPlayer.getResources(), 4);
 		
+	}
+	
+	@Test
+	public void testIsAlive() {
+		Player testPlayer = new Player(10);
+		assertFalse("Player should be dead, returned as alive", 
+				testPlayer.isAlive());
+		MainShip testMainShip = new MainShip();
+		Position testPosition1 = new Position(50, 50, Position.Orientation.HORIZONTAL);
+		testPlayer.getBoard().placeShip(testMainShip, testPosition1);
+		assertTrue("Player should be alive, returned dead",
+				testPlayer.isAlive());
+		DestroyerShip testDestroyerShip = new DestroyerShip();
+		Position testPosition2 = new Position(20, 20, Position.Orientation.HORIZONTAL);
+		testPlayer.getBoard().placeShip(testDestroyerShip, testPosition2);
+		assertTrue("Player should be alive, returned dead",
+				testPlayer.isAlive());
+		testPlayer.getBoard().removeShip(50, 50);
+		assertFalse("Player should be dead, returned as alive",
+				testPlayer.isAlive());
+	}
+	
+	@Test
+	public void testGiveResources() {
+		Player testPlayer = new Player(0);
+		testPlayer.giveResources(10);
+		int playerResources = testPlayer.getResources();
+		assertEquals("Resources should equal 10, but they actually equal" + playerResources,
+				playerResources, 10);
+		testPlayer.giveResources(-10);
+		playerResources = testPlayer.getResources();
+		assertEquals("Resources should equal 10, but they equal" + playerResources,
+				playerResources, 10);	
 	}
 
 }
