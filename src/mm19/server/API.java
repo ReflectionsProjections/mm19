@@ -3,8 +3,8 @@ import java.util.ArrayList;
 
 import mm19.game.Action;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * 
@@ -22,10 +22,10 @@ public class API {
 			JSONArray Actions = (JSONArray)json.get("shipActions");
 			JSONObject temp;
 			ArrayList<Action> actionList = new ArrayList<Action>();
-			for(int i = 0; i < Actions.size(); i++)	{
+			for(int i = 0; i < Actions.length(); i++)	{
 				temp = (JSONObject) Actions.get(i);
-				actionList.add(new Action((int)temp.get("ID"), (int)temp.get("actionID"), 
-						(int)temp.get("actionX"), (int)temp.get("actionY"), (int)temp.get("extra")));
+				actionList.add(new Action(temp.getInt("ID"), temp.getInt("actionID"),
+						temp.getInt("actionX"), temp.getInt("actionY"), temp.getInt("extra")));
 			}
 			//playerTurn((int)json.get("PlayerID"), actionList);
 		} catch (Exception e) {
