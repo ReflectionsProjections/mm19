@@ -65,13 +65,11 @@ function drawFrame(display, index) {
     }
     var turn = globalTurns[globalTurns[0]++];
 
-    try {
+    // try {
         drawTurn(display, turn);
-    } catch (error) {
-        alert("Invalid turn format!");
-    }
-
-    drawEffects(display, globalTurns[globalTurns[0]-3]);
+    // } catch (error) {
+    //     alert("Invalid turn format!");
+    // }
 
     //ask for callback
     window.setTimeout(drawFrame, TICK_LENGTH, display, game_ind);
@@ -106,9 +104,7 @@ function drawTurn(display, turn) {
 
     //add new images
     for (ind = 0; ind < turn.ships.length; ind++) {
-        var ship_id = turn.ships[ind].ID;
-
-        display.canvasElements[player].ships[ship_id] =
+        display.canvasElements[player].ships[turn.ships[ind].ID] =
             drawShip(
                 turn.ships[ind],
                 display.browser.boxWidth,
@@ -116,21 +112,44 @@ function drawTurn(display, turn) {
                 display.canvasElements[player].y);
     }
 
+    for (ind = 0; ind < turn.actions.length; ind++) {
+        var x = getOtherPlayer(display, player).x + display.browser.boxWidth * turn.actions[ind].actionX;
+        var y = getOtherPlayer(display, player).y + display.browser.boxWidth * turn.actions[ind].actionY;
+        var color = "#000000";
+        switch(turn.actions[ind].actionID) {
+            case "F":
+                color = "#FF0000";
+                break;
+            case "B":
+                color = "#FFFF00";
+                break;
+            case "S":
+                color = "#0000FF";
+                break;
+            default:
+                continue;
+        }
+        explosion(x, y, display.browser.boxWidth, color);
+    }
+
 };
 
-
-
+function getOtherPlayer(display, player) {
+    for (key in display.canvasElements) {
+        console.log(key);
+        if (key !== player && display.canvasElements[key].ships) {
+            return display.canvasElements[key];
+        }
+    }
+    console.log("BREAK!!\n");
+};
 
 function explosion(x, y, r, color) {
     var c = canvas.circle(x, y, 0);
     c.attr({"fill" : color});
-    c.animate({"r": r}, Math.floor(TICK_LENGTH / 4), "linear", function() {
+    c.animate({"r": r}, Math.floor(TICK_LENGTH / 2), "linear", function() {
         c.remove();
     });
-};
-
-function drawEffects(display, turn) {
-
 };
 
 /**
@@ -295,10 +314,10 @@ function setupCanvas() {
 
     display.canvasElements = {};
 
-    var turn1 = globalTurns[globalTurns[0]++];
+    var turn1 = globalTurns[1];
     display.canvasElements[turn1.playerName] = initializePlayer(display, turn1, 0);
 
-    var turn2 = globalTurns[globalTurns[0]++];
+    var turn2 = globalTurns[2];
     display.canvasElements[turn2.playerName] = initializePlayer(display, turn2, display.browser.boardWidth);
 
 
@@ -374,6 +393,7 @@ function handleFileSelect(evt) {
         return function(e) {
             try {
                 currentLog = json_parse(e.target.result);
+                game_ind++;
                 //enable run visualization button
                 document.getElementById("runLogButton").removeAttribute("disabled");
             } catch (error) {
