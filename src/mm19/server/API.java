@@ -15,10 +15,16 @@ import org.json.JSONObject;
  *
  */
 public class API {
-	JSONObject player1;
-	JSONObject player2;
+	
+	JSONArray player1results;
+	JSONArray player2results;
+	
+	JSONArray player1ships;
+	JSONArray player2ships;
+	
 	public void decode(JSONObject json){
 		try {
+			
 			JSONArray Actions = (JSONArray)json.get("shipActions");
 			JSONObject temp;
 			ArrayList<Action> actionList = new ArrayList<Action>();
@@ -33,11 +39,37 @@ public class API {
 		}
 	}
 	
-	public void writeP1(Result r){
+	public void writeP1(ServerResponse r){
+		
+		// Create new JSON object
+		jsonObject jsonObj = new JsonObject();
+		
+		// Add values to JSON object
+		jsonObj.put("error", r.error);
+		jsonObj.put("playerId", r.playerID);
+		jsonObj.put("playerName", r.playerName);
+		jsonObj.put("resources", r.resources);
+		jsonObj.put("ships", r.ships); // Does this work / Is this necessary?
+		
+		// Save JSON object
+		player1results.add(jsonObj); // This will need changing
 		
 	}
 	
-	public void writeP2(Result r){
+	public void writeP2(ServerResponse r){
+		
+		// Create new JSON object
+		jsonObject jsonObj = new JsonObject();
+		
+		// Add values to JSON object
+		jsonObj.put("error", r.error);
+		jsonObj.put("playerId", r.playerID);
+		jsonObj.put("playerName", r.playerName);
+		jsonObj.put("resources", r.resources);
+		jsonObj.put("ships", r.ships); // Does this work / Is this necessary?
+		
+		// Save JSON object
+		player1results.add(jsonObj); // This will need changing
 		
 	}
 	
