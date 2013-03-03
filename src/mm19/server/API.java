@@ -52,34 +52,34 @@ public class API {
 	public void writeP1(ServerResponse r){
 		
 		// Create new JSON object
-		JSONObject jsonObj = new JSONObject();
+		JSONObject JSONObj = new JSONObject();
 		
 		// Add values to JSON object
-		jsonObj.put("error", r.error);
-		jsonObj.put("playerId", r.playerID);
-		jsonObj.put("playerName", r.playerName);
-		jsonObj.put("resources", r.resources);
-		jsonObj.put("ships", r.ships); // Does this work / Is this necessary?
+		JSONObj.put("error", r.error);
+		JSONObj.put("playerId", r.playerID);
+		JSONObj.put("playerName", r.playerName);
+		JSONObj.put("resources", r.resources);
+		JSONObj.put("ships", r.ships); // Does this work / Is this necessary?
 		
 		// Save JSON object
-		player1results.add(jsonObj); // This will need changing
+		player1results.add(JSONObj); // This will need changing
 		
 	}
 	
 	public void writeP2(ServerResponse r){
 		
 		// Create new JSON object
-		JSONObject jsonObj = new JSONObject();
+		JSONObject JSONObj = new JSONObject();
 		
 		// Add values to JSON object
-		jsonObj.put("error", r.error);
-		jsonObj.put("playerId", r.playerID);
-		jsonObj.put("playerName", r.playerName);
-		jsonObj.put("resources", r.resources);
-		jsonObj.put("ships", r.ships); // Does this work / Is this necessary?
+		JSONObj.put("error", r.error);
+		JSONObj.put("playerId", r.playerID);
+		JSONObj.put("playerName", r.playerName);
+		JSONObj.put("resources", r.resources);
+		JSONObj.put("ships", r.ships); // Does this work / Is this necessary?
 		
 		// Save JSON object
-		player1results.add(jsonObj); // This will need changing
+		player1results.add(JSONObj); // This will need changing
 		
 	}
 	
