@@ -15,13 +15,17 @@ import org.json.JSONObject;
  *
  */
 public class API {
-	
+
+	JSONObject player1;
+	JSONObject player2;
+	int p1ID;
+	int p2ID;
 	JSONArray player1results;
 	JSONArray player2results;
 	
 	JSONArray player1ships;
 	JSONArray player2ships;
-	
+
 	public void decode(JSONObject json){
 		try {
 			
@@ -39,10 +43,16 @@ public class API {
 		}
 	}
 	
+
+	public void writeResultBoth(ServerResponse r){
+		//writeResultP1(r);
+		//writeResultP2(r);
+	}
+
 	public void writeP1(ServerResponse r){
 		
 		// Create new JSON object
-		jsonObject jsonObj = new JsonObject();
+		JSONObject jsonObj = new JSONObject();
 		
 		// Add values to JSON object
 		jsonObj.put("error", r.error);
@@ -59,7 +69,7 @@ public class API {
 	public void writeP2(ServerResponse r){
 		
 		// Create new JSON object
-		jsonObject jsonObj = new JsonObject();
+		JSONObject jsonObj = new JSONObject();
 		
 		// Add values to JSON object
 		jsonObj.put("error", r.error);
