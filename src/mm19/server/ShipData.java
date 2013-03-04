@@ -7,7 +7,7 @@ public char type;
 public int xCoord;
 public int yCoord;
 public char orientation;
-	public ShipData(int health, int ID, char type,int xCoord, int yCoord,char orientation)
+public ShipData(int health, int ID, char type,int xCoord, int yCoord,char orientation)
 	{
 	this.health=health;
 	this.ID =ID;
