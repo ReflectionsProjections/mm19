@@ -15,7 +15,7 @@ import org.json.JSONObject;
  * @author mm19
  * 
  * This will tie together the server and game logic.
- * Functions defined here will be called by the server to interface properly with the game.
+ * Functions defined here are called by the server to interface properly with the game.
  *
  */
 public class API {
@@ -73,20 +73,53 @@ public class API {
 	 * 			such, null otherwise
 	 */
 	private ShipData getShip(JSONObject ship){
-		// TODO Auto-generated method stub
-		return null;
 		
+		// Returned shipData object
+		ShipData shipData;
+		
+		// TODO Auto-generated method stub
+		if(ship.has("health") && (shipData.health = ship.getInt("health")) != null)
+		{
+			if(ship.has("ID") && (shipData.ID = ship.getInt("ID")) != null)
+			{
+				if(ship.has("type") && (shipData.type = ship.getChar("type")) != null)
+				{
+					if(ship.has("xCoord") && (shipData.xCoord = ship.getInt("xCoord")) != null)
+					{
+						if(ship.has("yCoord") && (shipData.yCoord = ship.getInt("yCoord")) != null)
+						{
+							if(ship.has("orientation") && (shipData.xCoord = ship.getChar("orientation")) != null)
+							{
+								// Success
+								return shipData;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Failure
+		return null;
 	}
 	
 	/**
 	 * @param shiparr
-	 * @return returns the full arraylist of 20 valid ships if the given
+	 * @return returns the full arrayList of 20 valid ships if the given
 	 * 			JSONArray contains such, any error will cause this function 
 	 * 			return null
 	 */
-	private ArrayList<ShipData> getShipList(JSONArray shiparr) {
+	private ArrayList<ShipData> getShipList(JSONArray shipArr) {
+		
+		// TODO: I'm slightly confused about what this function does - Ace
+		// TODO: The below stuff is a guess-timate
+		
+		
+		if(shipArr.getValue(0) != null)
+		
 		// TODO Auto-generated method stub
 		return null;
+		
 	}
 
 	
