@@ -202,6 +202,7 @@ public class API {
 		if(status == 1)
 		{
 			//TODO write conditions
+			return true;
 			
 		}
 		return false;
@@ -213,7 +214,22 @@ public class API {
 	 */
 	private JSONObject makeShipJSON(ShipData data)
 	{
-		return null;
+		JSONObject tempShip = new JSONObject();
+		
+		
+		try {
+			tempShip.append("health", data.health);
+			tempShip.append("ID", data.ID); 
+			tempShip.append("type", data.type); 
+			tempShip.append("xCoord", data.xCoord);
+			tempShip.append("yCoord", data.yCoord);
+			tempShip.append("orientation", data.orientation);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tempShip;
 	}
 	
 	/* may be redundant
