@@ -20,4 +20,15 @@ public class Action {
 		this.actionYVar = y;
 		this.actionExtraVar = extra;
 	}
+	
+	// Empty constructor
+	public Action()
+	{
+		// Initialize variables
+		this.shipID = 0;
+		this.actionID = 0;
+		this.actionXVar = 0;
+		this.actionYVar = 0;
+		this.actionExtraVar = 0;
+	}
 }
