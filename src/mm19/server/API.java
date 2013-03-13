@@ -29,6 +29,7 @@ public class API {
 	
 	JSONArray player1ships;
 	JSONArray player2ships;
+	private final int MAX_SIZE = 100;
 	
 	
 	public boolean newData(JSONObject obj)
@@ -72,26 +73,29 @@ public class API {
 	 * @return returns a valid ship if the given JSONObject contains 
 	 * 			such, null otherwise
 	 */
-	private ShipData getShip(JSONObject ship){
-		
-		// Returned shipData object
-		ShipData shipData;
+	private ShipData getShip(JSONObject ship) throws JSONException{		
+		int health;
+		int ID;
+		String type;
+		int xCoord;
+		int yCoord;
+		String orientation;
 		
 		// TODO Auto-generated method stub
-		if(ship.has("health") && (shipData.health = ship.getInt("health")) != null)
+		if(ship.has("health") && (health = ship.getInt("health")) != 0)
 		{
-			if(ship.has("ID") && (shipData.ID = ship.getInt("ID")) != null)
+			if(ship.has("ID") && (ID = ship.getInt("ID")) != 0)
 			{
-				if(ship.has("type") && (shipData.type = ship.getChar("type")) != null)
+				if(ship.has("type") && (type = ship.getString("type")).equals(""))
 				{
-					if(ship.has("xCoord") && (shipData.xCoord = ship.getInt("xCoord")) != null)
+					if(ship.has("xCoord") && (xCoord = ship.getInt("xCoord")) > -1 && xCoord < MAX_SIZE)
 					{
-						if(ship.has("yCoord") && (shipData.yCoord = ship.getInt("yCoord")) != null)
+						if(ship.has("yCoord") && (yCoord = ship.getInt("yCoord")) > -1 && yCoord < MAX_SIZE)
 						{
-							if(ship.has("orientation") && (shipData.xCoord = ship.getChar("orientation")) != null)
+							if(ship.has("orientation") && !(orientation = ship.getString("orientation")).equals(""))
 							{
 								// Success
-								return shipData;
+								return new ShipData(health, ID, type, xCoord, yCoord, orientation);
 							}
 						}
 					}
@@ -111,13 +115,7 @@ public class API {
 	 */
 	private ArrayList<ShipData> getShipList(JSONArray shipArr) {
 		
-		// TODO: I'm slightly confused about what this function does - Ace
-		// TODO: The below stuff is a guess-timate
 		
-		
-		if(shipArr.getValue(0) != null)
-		
-		// TODO Auto-generated method stub
 		return null;
 		
 	}
