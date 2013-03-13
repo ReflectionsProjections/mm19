@@ -29,7 +29,7 @@ public class API {
 	
 	JSONArray player1ships;
 	JSONArray player2ships;
-	private final int MAX_SIZE = 100;
+	private final int MAX_SIZE = 100; // temporary holder variable move to constants
 	
 	
 	public boolean newData(JSONObject obj)
@@ -73,7 +73,7 @@ public class API {
 	 * @return returns a valid ship if the given JSONObject contains 
 	 * 			such, null otherwise
 	 */
-	private ShipData getShip(JSONObject ship) throws JSONException{		
+	private ShipData getShip(JSONObject ship){		
 		int health;
 		int ID;
 		String type;
@@ -82,25 +82,30 @@ public class API {
 		String orientation;
 		
 		// TODO Auto-generated method stub
-		if(ship.has("health") && (health = ship.getInt("health")) != 0)
-		{
-			if(ship.has("ID") && (ID = ship.getInt("ID")) != 0)
+		try {
+			if(ship.has("health") && (health = ship.getInt("health")) != 0)
 			{
-				if(ship.has("type") && (type = ship.getString("type")).equals(""))
+				if(ship.has("ID") && (ID = ship.getInt("ID")) != 0)
 				{
-					if(ship.has("xCoord") && (xCoord = ship.getInt("xCoord")) > -1 && xCoord < MAX_SIZE)
+					if(ship.has("type") && (type = ship.getString("type")).equals(""))
 					{
-						if(ship.has("yCoord") && (yCoord = ship.getInt("yCoord")) > -1 && yCoord < MAX_SIZE)
+						if(ship.has("xCoord") && (xCoord = ship.getInt("xCoord")) > -1 && xCoord < MAX_SIZE)
 						{
-							if(ship.has("orientation") && !(orientation = ship.getString("orientation")).equals(""))
+							if(ship.has("yCoord") && (yCoord = ship.getInt("yCoord")) > -1 && yCoord < MAX_SIZE)
 							{
-								// Success
-								return new ShipData(health, ID, type, xCoord, yCoord, orientation);
+								if(ship.has("orientation") && !(orientation = ship.getString("orientation")).equals(""))
+								{
+									// Success
+									return new ShipData(health, ID, type, xCoord, yCoord, orientation);
+								}
 							}
 						}
 					}
 				}
 			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		// Failure
@@ -115,6 +120,21 @@ public class API {
 	 */
 	private ArrayList<ShipData> getShipList(JSONArray shipArr) {
 		
+		if(shipArr.length() != 19) return null;
+		int length = shipArr.length();
+		ArrayList<ShipData> list = new ArrayList<ShipData>();
+		ShipData tempShip;
+		JSONObject tempJson;
+		while(length > 0){
+			length--;
+			try {
+				tempJson = shipArr.getJSONObject(length);
+				if((tempShip = getShip(tempJson)) != null) list.add(tempShip);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		return null;
 		
@@ -171,7 +191,19 @@ public class API {
 	 * @return - true if sucessful write
 	 */
 	public boolean writePlayerShips(int status, ArrayList<ShipData> ships){
-		//TODO write shipdata to json
+		JSONArray shipsJson = new JSONArray();
+		JSONObject tempShip;
+		int length = ships.size();
+		while(length > 0){
+			length --;
+			if((tempShip = makeShipJSON(ships.get(length)))!=null)
+				shipsJson.put(tempShip);
+		}
+		if(status == 1)
+		{
+			//TODO write conditions
+			
+		}
 		return false;
 	}
 	
