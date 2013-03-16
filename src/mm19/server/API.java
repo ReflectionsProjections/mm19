@@ -68,80 +68,7 @@ public class API {
 		
 	}
 	
-	/**
-	 * @param ship
-	 * @return returns a valid ship if the given JSONObject contains 
-	 * 			such, null otherwise
-	 */
-	private ShipData getShip(JSONObject ship){		
-		int health;
-		int ID;
-		String type;
-		int xCoord;
-		int yCoord;
-		String orientation;
-		
-		// TODO Auto-generated method stub
-		try {
-			if(ship.has("health") && (health = ship.getInt("health")) != 0)
-			{
-				if(ship.has("ID") && (ID = ship.getInt("ID")) != 0)
-				{
-					if(ship.has("type") && (type = ship.getString("type")).equals(""))
-					{
-						if(ship.has("xCoord") && (xCoord = ship.getInt("xCoord")) > -1 && xCoord < MAX_SIZE)
-						{
-							if(ship.has("yCoord") && (yCoord = ship.getInt("yCoord")) > -1 && yCoord < MAX_SIZE)
-							{
-								if(ship.has("orientation") && !(orientation = ship.getString("orientation")).equals(""))
-								{
-									// Success
-									return new ShipData(health, ID, type, xCoord, yCoord, orientation);
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		// Failure
-		return null;
-	}
-	
-	/**
-	 * @param shiparr
-	 * @return returns the full arrayList of 20 valid ships if the given
-	 * 			JSONArray contains such, any error will cause this function 
-	 * 			return null
-	 */
-	private ArrayList<ShipData> getShipList(JSONArray shipArr) {
-		
-		if(shipArr.length() != 19) return null;
-		int length = shipArr.length();
-		ArrayList<ShipData> list = new ArrayList<ShipData>();
-		ShipData tempShip;
-		JSONObject tempJson;
-		while(length > 0){
-			length--;
-			try {
-				tempJson = shipArr.getJSONObject(length);
-				if((tempShip = getShip(tempJson)) != null) list.add(tempShip);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		return null;
-		
-	}
 
-	
-	
 	public boolean decodeTurn(JSONObject obj){
 		int playerID;
 		ArrayList<Action> actionList;
@@ -166,11 +93,112 @@ public class API {
 	
 	/**
 	 * @param obj
+	 * @return returns a valid ship if the given JSONObject contains 
+	 * 			such, null otherwise
+	 */
+	private ShipData getShip(JSONObject obj){		
+		int health;
+		int ID;
+		String type;
+		int xCoord;
+		int yCoord;
+		String orientation;
+		
+		// TODO Auto-generated method stub
+		try {
+			if(obj.has("health") && (health = obj.getInt("health")) != 0)
+			{
+				if(obj.has("ID") && (ID = obj.getInt("ID")) != 0)
+				{
+					if(obj.has("type") && (type = obj.getString("type")).equals(""))
+					{
+						if(obj.has("xCoord") && (xCoord = obj.getInt("xCoord")) > -1 && xCoord < MAX_SIZE)
+						{
+							if(obj.has("yCoord") && (yCoord = obj.getInt("yCoord")) > -1 && yCoord < MAX_SIZE)
+							{
+								if(obj.has("orientation") && !(orientation = obj.getString("orientation")).equals(""))
+								{
+									// Success
+									return new ShipData(health, ID, type, xCoord, yCoord, orientation);
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Failure
+		return null;
+	}
+	
+	/**
+	 * @param jsonArray
+	 * @return returns the full arrayList of 20 valid ships if the given
+	 * 			JSONArray contains such, any error will cause this function 
+	 * 			return null
+	 */
+	private ArrayList<ShipData> getShipList(JSONArray jsonArray) {
+		
+		if(jsonArray.length() != 19) return null;
+		int length = jsonArray.length();
+		ArrayList<ShipData> list = new ArrayList<ShipData>();
+		ShipData tempShip;
+		JSONObject tempJson;
+		while(length > 0){
+			length--;
+			try {
+				tempJson = jsonArray.getJSONObject(length);
+				if((tempShip = getShip(tempJson)) != null) list.add(tempShip);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return list;
+		
+	}
+	
+	/**
+	 * @param obj
 	 * @return - returns the associated Action in the given 
 	 * 				JSON object contains a valid Action, null otherwise
 	 */
 	private Action getAction(JSONObject obj) {
+		int actionID;
+		int shipID;
+		int actionXVar;
+		int actionYVar;
+		int actionExtraVar;
+		
 		// TODO Auto-generated method stub
+		try {
+			if(obj.has("actionID") && (actionID = obj.getInt("actionID")) != 0){
+				if(obj.has("shipID") && (shipID = obj.getInt("shipID")) != 0){
+					if(obj.has("actionXVar") && obj.has("actionYVar")){
+						actionXVar = obj.getInt("actionXVar");
+						actionYVar = obj.getInt("actionYVar");
+					}
+					else actionXVar = actionYVar = -1;
+					
+					if(obj.has("actionExtraVar")){
+						actionExtraVar = obj.getInt("actionExtraVar");
+					}
+					else actionExtraVar = -1;
+					
+					return new Action(actionID, shipID, actionXVar, actionYVar, actionExtraVar);
+				}
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Failure
 		return null;
 	}
 	
@@ -181,8 +209,23 @@ public class API {
 	 * 				JSONarray contains such, and null otherwise
 	 */
 	private ArrayList<Action> getActionList(JSONArray jsonArray) {
-		// TODO Auto-generated method stub
-		return null;
+		if(jsonArray.length() != 19) return null;
+		int length = jsonArray.length();
+		ArrayList<Action> list = new ArrayList<Action>();
+		Action tempAction;
+		JSONObject tempJson;
+		while(length > 0){
+			length--;
+			try {
+				tempJson = jsonArray.getJSONObject(length);
+				if((tempAction = getAction(tempJson)) != null) list.add(tempAction);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return list;
 	}
 
 	/**
@@ -199,12 +242,7 @@ public class API {
 			if((tempShip = makeShipJSON(ships.get(length)))!=null)
 				shipsJson.put(tempShip);
 		}
-		if(status == 1)
-		{
-			//TODO write conditions
-			return true;
-			
-		}
+		if(writePlayer(status, "ships", (Object)shipsJson)) return true;
 		return false;
 	}
 	
@@ -232,24 +270,21 @@ public class API {
 		return tempShip;
 	}
 	
-	/* may be redundant
-	public boolean writePlayerShipActions(int status, ArrayList<ActionReport> acts){
-		//TODO write action results to json
-	}
-	
-	private JSONObject makeShipActionJSON(ActionReport act)
-	{
-		return null;
-	}
-	*/
-	
 	/**
 	 * @param status - enum that tells us to write to player1, player2 or both
 	 * @param hits - array list of current player hit reports
 	 * @return - true if sucessful write
 	 */
 	public boolean writePlayerHits(int status, ArrayList<HitReport> hits){
-		//TODO write hitdata to json
+		JSONArray hitsJson = new JSONArray();
+		JSONObject tempHit;
+		int length = hits.size();
+		while(length > 0){
+			length --;
+			if((tempHit = makeHitJSON(hits.get(length)))!=null)
+				hitsJson.put(tempHit);
+		}
+		if(writePlayer(status, "hitReport", (Object)hitsJson)) return true;
 		return false;
 	}
 	
@@ -259,7 +294,18 @@ public class API {
 	 */
 	private JSONObject makeHitJSON(HitReport report)
 	{
-		return null;
+		JSONObject tempHit = new JSONObject();
+		try {
+			tempHit.append("xCoord", report.x);
+			tempHit.append("yCoord", report.y);
+			tempHit.append("hit", report.shotSuccessful);
+			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tempHit;
 	}
 	
 	/**
@@ -268,7 +314,16 @@ public class API {
 	 * @return - true if sucessful write
 	 */
 	public boolean writePlayerPings(int status, ArrayList<SonarReport> pings){
-		//TODO write sonar reports to json
+		JSONArray pingsJson = new JSONArray();
+		JSONObject tempPing;
+		int length = pings.size();
+		while(length > 0){
+			length --;
+			if((tempPing = makePingJSON(pings.get(length)))!=null)
+				pingsJson.put(tempPing);
+		}
+		if(writePlayer(status, "pingReport", (Object)pingsJson)) return true;
+		
 		return false;
 	}
 	
@@ -278,11 +333,33 @@ public class API {
 	 */
 	private JSONObject makePingJSON(SonarReport ping)
 	{
+		JSONObject tempPing = new JSONObject();
+		
+		try {
+			tempPing.append("distance", ping.dist);
+			tempPing.append("shipID", ping.ship.getID());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tempPing;
+	}
+	
+	//TODO actionREsults and error
+	/*
+	
+	public boolean writePlayerShipActions(int status, ArrayList<ActionReport> acts){
+		//TODO write action results to json
+	}
+	
+	private JSONObject makeShipActionJSON(ActionReport act)
+	{
 		return null;
 	}
 	
 	//TODO error gen
-	/*
+	// may be redundant
 	public boolean writePlayerErrors(int status, ArrayList<ErrorReport> errs){
 		//TODO write errors reports to json
 		return false;
@@ -292,8 +369,31 @@ public class API {
 	{
 		return null;
 	}
+	
+	
 	*/
+	
+	/*
+	public void intteruptTurn(int status)
+	{
+		//TODO talk to engine
 		
+	}
+	*/
+	//TODO turn interuppts
+	//TODO status enum creation
+	//TODO append to player json and cleaning
+	//TODO Sending to server
+	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param string - key to what we're writing
+	 * @param obj - object that we're writing
+	 */
+	private boolean writePlayer(int status, String string, Object obj) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 	/**
 	 * @param status  - enum that tells us to write to player1, player2 or both
 	 * @param PlayerID - given Player's ID
