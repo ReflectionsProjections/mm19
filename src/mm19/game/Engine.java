@@ -11,6 +11,7 @@ import mm19.game.ships.Ship;
 import mm19.server.API;
 import mm19.server.ShipData;
 
+
 /**
  * @author mm19
  *
@@ -26,7 +27,9 @@ public class Engine{
 	final public static String MOVE_Horizontal = "MH";
 	final public static String MOVE_Vertical = "MV";
 	
+	final public static int MAXSHIPS =5;
 	final public static int DEFAULT_RESOURCES=100;
+	
 	private static final String DESTROYER = "D";
 	private static final String MAINSHIP = "M";
 	private static final String PILOT = "P";
@@ -54,7 +57,7 @@ public class Engine{
 		Ship tempShip;
 		Position tempPos;
 		String tempType;
-		for(int i = 0; i < shipDatas.size(); i++){
+		for(int i = 0; i < Math.max(shipDatas.size(), MAXSHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
 			if(tempType.equals(DESTROYER)){
@@ -80,9 +83,19 @@ public class Engine{
 		}
 		
 		Player player=new Player(DEFAULT_RESOURCES);
-		Ability.setupBoard(player, ships, positions); //TODO: could fail to setup board
-		if(p1 == null) p1 = player;
-		else p2 = player;
+		
+		boolean setupShips = Ability.setupBoard(player, ships, positions); 
+		
+		if (!(setupShips && player.isAlive())) {
+			return -1;
+			}
+		if(p1 == null) {
+			p1 = player;
+		}
+		else if (p2 == null) {
+			p2 = player;
+		}
+		else throw new RuntimeException("too many players!");
 		return player.getPlayerID();
 	}
 	
