@@ -38,7 +38,7 @@ public class API {
 	public boolean newData(JSONObject obj)
 	{
 		int temp;
-		game = new Engine();
+		game = new Engine(this);
 		String playerName;
 		ShipData MainShip;
 		JSONArray shiparr;
@@ -361,7 +361,7 @@ public class API {
 	 * @param results - array list of current action results
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
+	private boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
 		JSONArray resultsJson = new JSONArray();
 		JSONObject tempResult;
 		int length = results.size();
@@ -438,7 +438,7 @@ public class API {
 	 * @param string - key to what we're writing
 	 * @param obj - object that we're writing
 	 */
-	private boolean writePlayer(int status, String string, Object obj) {
+	public boolean writePlayer(int status, String string, Object obj) {
 		// TODO Auto-generated method stub
 		try {
 			switch(status){
