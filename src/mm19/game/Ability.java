@@ -29,7 +29,7 @@ public class Ability {
 
     final public static int MOVE_COST_PER_UNIT_LENGTH = 50;
 
-    enum Type {SHOOT, BURST_SHOT, MOVE, SONAR}
+    public enum Type {SHOOT, BURST_SHOT, MOVE, SONAR}
 
     /**
      * Resets the abilities of the player and their ships.

@@ -179,7 +179,7 @@ public class API {
 	 * 				JSON object contains a valid Action, null otherwise
 	 */
 	private Action getAction(JSONObject obj) {
-		int actionID;
+		String actionID;
 		int shipID;
 		int actionXVar;
 		int actionYVar;
@@ -187,7 +187,7 @@ public class API {
 		
 		// TODO Auto-generated method stub
 		try {
-			if(obj.has("actionID") && (actionID = obj.getInt("actionID")) != 0){
+			if(obj.has("actionID") && (actionID = obj.getString("actionID")).isEmpty()){
 				if(obj.has("shipID") && (shipID = obj.getInt("shipID")) != 0){
 					if(obj.has("actionXVar") && obj.has("actionYVar")){
 						actionXVar = obj.getInt("actionXVar");
@@ -200,7 +200,7 @@ public class API {
 					}
 					else actionExtraVar = -1;
 					
-					return new Action(actionID, shipID, actionXVar, actionYVar, actionExtraVar);
+					return new Action(shipID, actionID, actionXVar, actionYVar, actionExtraVar);
 				}
 			}
 		} catch (JSONException e) {
@@ -361,7 +361,7 @@ public class API {
 	 * @param results - array list of current action results
 	 * @return - true if sucessful write
 	 */
-	private boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
+	public boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
 		JSONArray resultsJson = new JSONArray();
 		JSONObject tempResult;
 		int length = results.size();
@@ -384,8 +384,7 @@ public class API {
 		JSONObject tempResult = new JSONObject();
 		
 		try {
-			tempResult.append("xCoord", result.xCoord);
-			tempResult.append("yCoord", result.yCoord);
+			tempResult.append("ShipID", result.shipID);
 			tempResult.append("result", result.result);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -438,7 +437,7 @@ public class API {
 	 * @param string - key to what we're writing
 	 * @param obj - object that we're writing
 	 */
-	public boolean writePlayer(int status, String string, Object obj) {
+	private boolean writePlayer(int status, String string, Object obj) {
 		// TODO Auto-generated method stub
 		try {
 			switch(status){

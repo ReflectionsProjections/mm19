@@ -3,7 +3,7 @@ package mm19.game;
 public class Action {
 
 	// Class variables
-	final public int actionID;
+	final public String actionID;
 	final public int shipID;
 	final public int actionXVar;
 	final public int actionYVar;
@@ -11,7 +11,7 @@ public class Action {
 
 	
 	// Variable-initializing constructor
-	public Action(int shipID, int i, int x, int y, int extra)
+	public Action(int shipID, String i, int x, int y, int extra)
 	{
 		// Initialize variables
 		this.shipID = shipID;
