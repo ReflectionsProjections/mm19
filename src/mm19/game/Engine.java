@@ -180,9 +180,11 @@ public class Engine{
 		} else if(!p1.isAlive()){
 			//Player 2 wins
 			//TODO: send win message
+			api.send(1, p1.getPlayerID(), p1.getPlayerName(), p1.getResources());
 		} else if(!p2.isAlive()){
 			//Player 1 wins
 			//TODO: send win message
+			api.send(1, p2.getPlayerID(), p2.getPlayerName(), p2.getResources());
 		} else{
 			//Send data to both players
 			int player1, player2;
@@ -224,8 +226,11 @@ public class Engine{
 			api.writePlayerResults(player1, results);
 			api.writePlayerPings(player1, sonar);
 			api.writePlayerHits(player1, hits);
+			api.send(player1, p.getPlayerID(), p.getPlayerName(), p.getResources());
+			//TODO: Should send some info to other player as well
+			
+			
 		}
-		//TODO: Should send some info to other player as well
 	}
 
 	public int getP1ID() {

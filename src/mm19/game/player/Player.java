@@ -120,6 +120,13 @@ public class Player {
     }
     
     /**
+     * @return the player's name
+     */
+    public String getPlayerName(){
+    	return playerName;
+    }
+    
+    /**
      * Subtracts resources from the player's total resources
      * @param resources	Number of resources to be subtracted
      * @return True of successful and false if not
