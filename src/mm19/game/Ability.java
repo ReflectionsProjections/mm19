@@ -94,15 +94,15 @@ public class Ability {
      * @param targetY         The y coordinate to attack
      * @return Null if the attackingPlayer did not have enough resources, a HitReport otherwise.
      */
-    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws Exception{
         Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
         if(!attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
-            return null;
+        	throw new Exception("I");
         }
 
         boolean hadResources = attackingPlayer.takeResources(MISSILE_COST);
         if (!hadResources) {
-            return null;
+        	throw new Exception("R");
         }
 
         attackingShip.useAbility();
@@ -128,17 +128,17 @@ public class Ability {
      * @param newPosition A position object indicating the new position of the ship
      * @return False if the move could not be made or player did not have enough resources, true otherwise.
      */
-    public static boolean move(Player player, int shipId, Position newPosition) {
+    public static boolean move(Player player, int shipId, Position newPosition) throws Exception{
         Board board = player.getBoard();
         Ship ship = board.getShip(shipId);
 
         if(player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
-            return false;
+        	throw new Exception("I");
         }
 
         boolean hadResources = player.takeResources(ship.getMoveCost());
         if (!hadResources) {
-            return false;
+        	throw new Exception("R");
         }
 
         boolean moveSuccessful = board.moveShip(shipId, newPosition);
@@ -163,17 +163,17 @@ public class Ability {
      * @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
      */
     public static ArrayList<HitReport>
-    burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws Exception{
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
 
         if(attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
-            return null;
+        	throw new Exception("I");
         }
 
         boolean hadResources = attackingPlayer.takeResources(BURST_SHOT_COST);
         if (!hadResources) {
-            return null;
+            throw new Exception("R");
         }
 
         attackingShip.useAbility();
@@ -215,16 +215,16 @@ public class Ability {
      * @return Null if attackingPlayer didn't have enough resources, a list of ship distances otherwise
      */
     public static ArrayList<SonarReport>
-    sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws Exception{
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
         if(attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
-            return null;
+            throw new Exception("I");
         }
 
         boolean hadResources = attackingPlayer.takeResources(SONAR_COST);
         if (!hadResources) {
-            return null;
+            throw new Exception("R");
         }
 
         attackingPlayer.useSpecialAbility();
