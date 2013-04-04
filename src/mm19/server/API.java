@@ -28,15 +28,13 @@ public class API {
 	private String authP1;
 	private String authP2;	
 	private Engine game;
-	private Server server;
 	private final int MAX_SIZE = 100; // temporary holder variable move to constants
 	
-	public API(Server parent){
+	public API(){
 		p1ID = -1;
 		p2ID = -1;
 		player1 = new JSONObject();
 		player2 = new JSONObject();
-		server = parent;
 		game = new Engine(this);
 	}
 	
@@ -50,14 +48,14 @@ public class API {
 		ArrayList<ShipData> ships;
 		
 		try {
-			if(obj.has("PlayerName") && 
-					((playerName = obj.getString("PlayerName")) != null) )
+			if(obj.has("playerName") && 
+					((playerName = obj.getString("playerName")) != null) )
 			{
 				if(obj.has("mainShip") && 
-						((MainShip = getShip((JSONObject)obj.get("MainShip"))) != null))
+						((MainShip = getShip((JSONObject)obj.get("mainShip"))) != null))
 				{
-					if(obj.has("Ships") && 
-							((shiparr = (JSONArray)obj.get("Ships")) != null))
+					if(obj.has("ships") && 
+							((shiparr = (JSONArray)obj.get("ships")) != null))
 					{
 						if((ships = getShipList(shiparr)) != null){
 							ships.add(MainShip);
@@ -466,17 +464,23 @@ public class API {
 		writePlayer(status, "resources", resources);
 		switch(status){
 			case 0: //send to player 1
-				server.sendPlayer(player1, authP1);
+
+				//TODO send P1 to server
+				Server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
 				break;
 			case 1: //send to player 2
-				server.sendPlayer(player2, authP2);
+				//TODO send P2 to server
+				Server.sendPlayer(player2, authP2);
 				player2 = new JSONObject();
 				break;
 			case 2: //append to both
-				server.sendPlayer(player1, authP1);
+				//TODO send P1 to server
+				Server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
-				server.sendPlayer(player2, authP2);
+				//TODO send P2 to server
+				Server.sendPlayer(player2, authP2);
+
 				player2 = new JSONObject();
 				break;
 			default: return false;
@@ -486,10 +490,10 @@ public class API {
 	
 	public boolean hasWon(int PlayerID){
 		if(PlayerID == p1ID){
-			server.winCondition(authP1);
+			Server.winCondition(authP1);
 			return true;
 		} else if(PlayerID == p2ID){
-			server.winCondition(authP2);
+			Server.winCondition(authP2);
 			return true;
 		}
 		return false;
