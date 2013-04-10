@@ -25,6 +25,7 @@ public class API {
 
     private JSONObject player1;
     private JSONObject player2;
+    private JSONObject err;
     private int p1ID;
     private int p2ID;
     private String authP1;
@@ -35,6 +36,7 @@ public class API {
                                         // constants
 
     public API() {
+        err = new JSONObject();
         p1ID = -1;
         p2ID = -1;
         player1 = new JSONObject();
@@ -498,6 +500,68 @@ public class API {
         return tempResult;
     }
 
+    /**
+     * @param errString - string of the error that has happened
+     */
+    private void addError(String errString)
+    {
+        try {
+            err.append("error", errString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * @param status 
+     *          - enum that tells us to write to player1, player2 or both
+     */
+    private void writePlayerErr(int status) {
+        try {
+                
+            switch (status) {
+            case 0: // append to player 1  
+                if(err.has("error")){
+                    player1.put("responsecode", 400);
+                    player1.put("error", err.getJSONObject("error"));
+                }
+                else {
+                    player1.put("responsecode", 200);
+                    player1.put("error", "");
+                }
+                break;
+            case 1: // append to player 2
+                if(err.has("error")){
+                    player2.put("responsecode", 400);
+                    player2.put("error", err.getJSONObject("error"));
+                }
+                else {
+                    player2.put("responsecode", 200);
+                    player2.put("error", "");
+                }
+                break;
+            case 2: // append to both
+                if(err.has("error")){
+                    player1.put("responsecode", 400);
+                    player2.put("responsecode", 400);
+                    player1.put("error", err.getJSONObject("error"));
+                    player2.put("error", err.getJSONObject("error"));
+                }
+                else {
+                    player1.put("responsecode", 200);
+                    player2.put("responsecode", 200);
+                    player1.put("error", "");
+                    player2.put("error", "");
+                }
+                break;
+            default:
+                return;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        err = new JSONObject();
+    }
     // TODO turn interuppts
     // TODO status enum creation
     /**
@@ -548,6 +612,8 @@ public class API {
         writePlayer(status, "PlayerID", PlayerID);
         writePlayer(status, "PlayerName", PlayerName);
         writePlayer(status, "resources", resources);
+        writePlayerErr(status);
+        
         switch (status) {
             case 0: // send to player 1
                 Server.sendPlayer(player1, authP1);
