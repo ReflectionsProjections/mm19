@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class RequestRunnable implements Runnable {
@@ -40,11 +41,15 @@ public class RequestRunnable implements Runnable {
 			try {
 				in = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 				String msg = in.readLine();
+				JSONObject obj = new JSONObject(msg);
+				Server.sendAPI(obj);
+				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				break;
 				
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
 		}
 			

@@ -111,9 +111,8 @@ public class Server {
 		int currPlayerID = -1;
 		serverLog.log(Level.INFO, "Starting server run loop");
 		running = true;
-		
+		Socket clientSocket = null;
 		while (running) {
-			Socket clientSocket = null;
 			try {
 				// Listen for a new connection
 				clientSocket = socket.accept();
@@ -126,28 +125,33 @@ public class Server {
 				}
 				
 				serverLog.log(Level.INFO, "Connection received.");
-				serverLog.log(Level.INFO, "Waiting on player for playerName.");
+				serverLog.log(Level.INFO, "Waiting on player for new player data.");
 				
 				in = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 				
-				//TODO: Make this more formal
-				out.println("Please send playerName");
-				out.flush();
-				
 				// Blocks until it gets a response from the client, hopefully a JSONObject with a playerName key.
-				String b = in.readLine();
+				String s = in.readLine();
 				
 				serverLog.log(Level.INFO, "Recieved player info");
 
 				try {
 					//Check to see if we are sent valid data.
-					JSONObject obj = new JSONObject(b);
+					JSONObject obj = new JSONObject(s);
 					if(obj.has("playerName")) {
 						// Create the player token
 						String name = obj.getString("playerName");
 						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
 						playerToken[currPlayerID] = name;
+						
+						if(mAPI.newData(obj, encrypt(name))) {
+							serverLog.log(Level.INFO, "Successfully initialized player!");
+						}
+						else {
+							serverLog.log(Level.INFO, "Couldn't initialize ships for player, dropping connection");
+							disconnectPlayer(name);
+							continue;
+						}
 					}
 				}
 				catch (JSONException e) {
@@ -157,6 +161,7 @@ public class Server {
 					//TODO: Make this more formal
 					out.println("You need to include \"playerName\" with your team name so we can authenticate you.");
 					out.flush();
+					disconnectPlayer(playerToken[currPlayerID]);
 					//Drop the client because he had bad data.
 					continue;
 				}
@@ -171,6 +176,7 @@ public class Server {
 				serverLog.log(Level.SEVERE, "Unexpected error accepting " +
 						"client connection.", e);
 			}
+			
 			// Create a new task for the incoming connection and put it in the
 			// thread pool
 			if(currPlayerID != -1) {
@@ -193,6 +199,13 @@ public class Server {
 	public static int disconnectPlayer(String token) {
 		if(encrypt(playerToken[0]).compareTo(token) == 0) {
 			connected[0] = false;
+			
+			try {
+				clientSockets[0].close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			clientSockets[0] = null;
 			playerToken[0] = "";
 			--playersConnected;
@@ -200,6 +213,13 @@ public class Server {
 		}
 		else if(encrypt(playerToken[1]).compareTo(token) == 0) {
 			connected[1] = false;
+			
+			try {
+				clientSockets[1].close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			clientSockets[1] = null;
 			playerToken[1] = "";
 			--playersConnected;
@@ -224,7 +244,7 @@ public class Server {
 		return -1;
 	}
 	
-	private  static String encrypt(String s) {
+	private static String encrypt(String s) {
 		return pbe.encrypt(s);
 	}
 	
@@ -250,12 +270,12 @@ public class Server {
 	}
 
 	public static void winCondition(String authP1) {
-		// TODO Auto-generated method stub
+		// TODO This method
 		
 		
 	}
 	
-	public static synchronized void sendAPI() {
-		
+	public static synchronized void sendAPI(JSONObject obj) {
+		mAPI.decodeTurn(obj);
 	}
 }

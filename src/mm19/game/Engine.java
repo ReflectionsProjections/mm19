@@ -1,6 +1,7 @@
 package mm19.game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import mm19.game.board.Position;
 import mm19.game.player.Player;
@@ -34,6 +35,8 @@ public class Engine{
 	private static final String MAINSHIP = "M";
 	private static final String PILOT = "P";
 	
+	private static HashMap<String, Integer> tokenMap;
+	
 	private API api;
 
 	/**
@@ -43,20 +46,22 @@ public class Engine{
     	p1 = null;
     	p2 = null;
     	this.api = api;
-    	
+    	tokenMap = new HashMap<String, Integer>();
     }
 	
     /**
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
 	 */
-	public int playerSet(ArrayList<ShipData> shipDatas, String playerName){//TODO: invalid input returns -1
+	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){//TODO: invalid input returns -1
 		
 		ArrayList<Ship> ships = new ArrayList<Ship>();
 		ArrayList<Position> positions = new ArrayList<Position>();
+		
 		Ship tempShip;
 		Position tempPos;
 		String tempType;
+		
 		for(int i = 0; i < Math.max(shipDatas.size(), MAXSHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
@@ -96,6 +101,9 @@ public class Engine{
 			p2 = player;
 		}
 		else throw new RuntimeException("too many players!");
+		
+		tokenMap.put(playerToken, player.getPlayerID());
+		
 		return player.getPlayerID();
 	}
 	
@@ -104,8 +112,11 @@ public class Engine{
 	 * This function attempts all of the player's chosen actions for the turn
 	 * Afterwards, it tells the API to send the data back
 	 */
-	public void playerTurn(int playerID, ArrayList<Action> actions){
+	public void playerTurn(String playerToken, ArrayList<Action> actions){
 		//Check for valid playerID
+		
+		int playerID = tokenMap.get(playerToken);
+		
 		Player p=null;
 		Player otherP=null;
 		if(p1.getPlayerID()==playerID){
