@@ -19,7 +19,7 @@ public class EngineTests {
 		public void method()
 		{
 			testapi = mock(API.class);
-			testGame = new Engine(null);
+			testGame = new Engine();
 		}
 		
 		@Test

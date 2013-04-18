@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.salt.RandomSaltGenerator;
+import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,16 +50,15 @@ public class Server {
 	private static BufferedReader in;
 	private static PrintWriter out;
 	
-	// The API
-	private static API mAPI;
-	
 	// Security
 	private static String[] playerToken;
-	private static StandardPBEStringEncryptor pbe;
+	private static BasicPasswordEncryptor bpe;
 
 	public static void main(String[] args) {
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+		success = API.initAPI();
+		
 		if (!success) {
 			serverLog.log(Level.SEVERE,
 					"Fatal error: unable to start server. Bailing out.");
@@ -73,16 +73,13 @@ public class Server {
 
 	private static boolean initServer() {
 		
-		mAPI = new API();
 		clientSockets = new Socket[2];
 		
 		playerToken = new String[2];
 		playerToken[0] = "";
 		playerToken[1] = "";
 		
-		pbe = new StandardPBEStringEncryptor();
-		pbe.setPassword(new RandomSaltGenerator().generateSalt(50).toString());
-		pbe.initialize();
+		bpe = new BasicPasswordEncryptor();
 		
 		connected = new boolean[2];
 		connected[0] = false;
@@ -142,9 +139,12 @@ public class Server {
 						// Create the player token
 						String name = obj.getString("playerName");
 						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
+						clientSockets[currPlayerID] = clientSocket;
 						playerToken[currPlayerID] = name;
-						
-						if(mAPI.newData(obj, encrypt(name))) {
+						connected[currPlayerID] = true;
+						boolean successfullyAdded = API.newData(obj, encrypt(name));
+						if(successfullyAdded) {
+
 							serverLog.log(Level.INFO, "Successfully initialized player!");
 						}
 						else {
@@ -158,8 +158,17 @@ public class Server {
 					serverLog.log(Level.WARNING, "Player didn't have playerName, couldn't authenticate");
 					serverLog.log(Level.INFO, "Notifying and Disconnecting player");
 					
-					//TODO: Make this more formal
-					out.println("You need to include \"playerName\" with your team name so we can authenticate you.");
+					JSONObject ret = new JSONObject();
+					
+					try {
+						ret.put("responseCode", 400);
+						ret.put("playerToken", playerToken[currPlayerID]);
+						ret.append("error", "You need to include \"playerName\" with your team name so we can authenticate you.");
+						out.println(ret.toString());
+					} catch (JSONException e1) {
+						e1.printStackTrace();
+					}
+					
 					out.flush();
 					disconnectPlayer(playerToken[currPlayerID]);
 					//Drop the client because he had bad data.
@@ -167,8 +176,6 @@ public class Server {
 				}
 				
 				// Making sure we don't connect more than the max number of players.
-				clientSockets[currPlayerID] = clientSocket;
-				connected[currPlayerID] = true;
 			 	serverLog.log(Level.INFO, "Players connected: " + ++playersConnected);	
 			 	
 				
@@ -180,7 +187,7 @@ public class Server {
 			// Create a new task for the incoming connection and put it in the
 			// thread pool
 			if(currPlayerID != -1) {
-				RequestRunnable task = new RequestRunnable(clientSocket, mAPI, playerToken[currPlayerID]);
+				RequestRunnable task = new RequestRunnable(clientSocket, playerToken[currPlayerID]);
 				threadPool.execute(task);
 			}
 		}
@@ -231,13 +238,16 @@ public class Server {
 	
 	// Returns 1 if player 1 is authenticated, returns 2 if player 2 is authenticated, returns -1 if neither.
 	private static int authenticate(String token) {
+		String temp = encrypt(playerToken[0]);
+		String temp2 = encrypt(playerToken[0]);
+		
 		if(connected[0]) {
-			if(encrypt(playerToken[0]).compareTo(token) == 0) {
+			if(bpe.checkPassword(playerToken[0], token)) {
 				return 0;
 			}
 		}
 		else if(connected[1]) {
-			if(encrypt(playerToken[1]).compareTo(token) == 0) {
+			if(bpe.checkPassword(playerToken[1], token)) {
 				return 1;
 			}
 		}
@@ -245,17 +255,16 @@ public class Server {
 	}
 	
 	private static String encrypt(String s) {
-		return pbe.encrypt(s);
+		return bpe.encryptPassword(s);
 	}
 	
-	public static void sendPlayer(JSONObject player1, String authP1) {
+	public static synchronized void sendPlayer(JSONObject player1, String authP1) {
 		// Authenticate the player.
 		int playerID = authenticate(authP1);
 		
 		if(playerID == -1) {
 			serverLog.log(Level.WARNING, "Couldn't authenticate player when trying to send a message");
 			return;
-			
 		}
 		
 		try {
@@ -276,6 +285,6 @@ public class Server {
 	}
 	
 	public static synchronized void sendAPI(JSONObject obj) {
-		mAPI.decodeTurn(obj);
+		API.decodeTurn(obj);
 	}
 }

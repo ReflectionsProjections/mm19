@@ -22,15 +22,12 @@ public class RequestRunnable implements Runnable {
 	protected Socket clientSocket = null;
 	protected String playerToken;
 	
-	protected API mAPI = null;
-	
 	protected BufferedReader in = null;
 	
 	
-	public RequestRunnable(Socket clientSocket, API api, String token) {
+	public RequestRunnable(Socket clientSocket, String token) {
 		this.clientSocket = clientSocket;
 		playerToken = token;
-		api = mAPI;
 	}
 	
 	@Override
