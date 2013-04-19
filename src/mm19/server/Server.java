@@ -36,6 +36,7 @@ public class Server {
 	// Bookkeeping
 	private static boolean[] connected;
 	private static int playersConnected;
+	private static GameLogger visualizerLog;
 	
 	// Sockets
 	private static ServerSocket socket = null;
@@ -58,7 +59,7 @@ public class Server {
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
 		success = API.initAPI();
-		
+		visualizerLog = new GameLogger(args[0]);
 		if (!success) {
 			serverLog.log(Level.SEVERE,
 					"Fatal error: unable to start server. Bailing out.");
@@ -286,5 +287,10 @@ public class Server {
 	
 	public static synchronized void sendAPI(JSONObject obj) {
 		API.decodeTurn(obj);
+	}
+
+	public static void printToVisualizerLog(String string) {
+		visualizerLog.log(string);
+		
 	}
 }
