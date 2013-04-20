@@ -1,5 +1,8 @@
 package mm19.server;
-
+/*
+ * This Ship Data class is a java representation  of the JSON the server will 
+ * send detailing each ship.
+ */
 public class ShipData {
 	final public int health;
 	final public int ID;

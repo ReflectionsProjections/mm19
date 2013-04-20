@@ -120,7 +120,7 @@ public class Ability {
                 board.removeShip(targetShip.getID());
             }
         }
-        return new HitReport(targetX, targetY, shipHit, targetShip);
+        return new HitReport(targetX, targetY, shipHit);
     }
 
     /**
@@ -200,7 +200,7 @@ public class Ability {
                 } else {
                     hitSuccessful = false;
                 }
-                hitReports.add(new HitReport(x, y, hitSuccessful, ship));
+                hitReports.add(new HitReport(x, y, hitSuccessful));
             }
         }
 
