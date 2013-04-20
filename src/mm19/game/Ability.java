@@ -99,7 +99,7 @@ public class Ability {
      */
     public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
-        if(!attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
+        if(attackingShip == null || !attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
         	throw new InputException();
         }
 
@@ -163,14 +163,14 @@ public class Ability {
      * @param shipID          The ID of the ship using burst shot
      * @param targetX         The x coordinate to shoot at
      * @param targetY         The y coordinate to shoot at
-     * @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
      */
-    public static ArrayList<HitReport>
-    burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    // @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
+    //ArrayList<HitReport>
+    public static void burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
 
-        if(attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
+        if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
         	throw new InputException();
         }
 
@@ -200,11 +200,13 @@ public class Ability {
                 } else {
                     hitSuccessful = false;
                 }
-                hitReports.add(new HitReport(x, y, hitSuccessful));
+
+                //hitReports.add(new HitReport(x, y, hitSuccessful, ship));
+
             }
         }
 
-        return hitReports;
+        //return hitReports;
     }
 
     /**
@@ -221,7 +223,7 @@ public class Ability {
     sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
-        if(attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
+        if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
             throw new InputException();
         }
 

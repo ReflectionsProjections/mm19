@@ -113,6 +113,7 @@ public class Engine{
 		
 		API.writePlayerShips(player.getPlayerID(), data);
 		API.writePlayerResources(player.getPlayerID(), player.getResources());
+		API.writePlayerResponseCode(player.getPlayerID());
 		return player.getPlayerID();
 	}
 	
@@ -160,9 +161,10 @@ public class Engine{
 					break;
 				case BURST_SHOT:
 					try{
-						ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-						results.add(new ShipActionResult(a.shipID, "S"));
-						hits.addAll(burstResponse);
+						//ArrayList<HitReport> burstResponse = 
+				        Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+						//results.add(new ShipActionResult(a.shipID, "S"));
+						//hits.addAll(burstResponse);
 					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
@@ -232,11 +234,19 @@ public class Engine{
 				opponentID=0;
 				opponent=players[1];
 			}
+			//reset player special
+			players[currPlayerID].resetSpecialAbility();
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
-			ArrayList<Ship> ships=opponent.getBoard().getShips();
-			Ship tempShip;
-			Position tempPos;
-			String tempType;
+            ArrayList<Ship> ships=players[currPlayerID].getBoard().getShips();
+            Ship tempShip;
+            Position tempPos;
+            String tempType;
+            for(int i = 0; i < ships.size(); i++){
+                tempShip = ships.get(i);
+                //reset ability flag on all player's ships
+                tempShip.resetAbility();
+            }
+			ships=opponent.getBoard().getShips();
 			for(int i = 0; i < ships.size(); i++){
 				tempShip = ships.get(i);
 				tempType = null;

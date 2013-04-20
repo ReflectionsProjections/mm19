@@ -2,12 +2,11 @@ package mm19.server;
 
 import java.util.ArrayList;
 
-import mm19.game.Ability;
 import mm19.game.Action;
 import mm19.game.Engine;
 import mm19.game.HitReport;
-import mm19.game.SonarReport;
 import mm19.game.ShipActionResult;
+import mm19.game.SonarReport;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
@@ -370,6 +369,35 @@ public class API {
 			return null;
 		}
 		return tempShip;
+	}
+	
+	public static boolean writePlayerError(int status, String message) {
+		try {
+			API.playerTurnObj[status].append("error", message);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean writePlayerResponseCode(int status) {
+		try {
+			if(API.playerTurnObj[status].has("error")) {
+				int length = API.playerTurnObj[status].getJSONArray("error").length();
+				if(length > 0) {
+					return writePlayer(status, "responseCode", 400);
+				}
+				return writePlayer(status, "responseCode", 200);
+			}
+			else {
+				API.playerTurnObj[status].put("error", new JSONArray());
+				return writePlayer(status, "responseCode", 200);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static boolean writePlayerResources(int status, int resources) {
