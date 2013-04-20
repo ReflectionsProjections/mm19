@@ -545,6 +545,18 @@ public class API {
 		}
 		return tempResult;
 	}
+	
+	public void notifyTurn(int status) {
+		writePlayer(status, "error", new JSONArray());
+		writePlayer(status, "responseCode", 100);
+		writePlayer(status, "playerName", "");
+		writePlayer(status, "playerToken", "");
+		writePlayer(status, "ships", new JSONArray());
+		writePlayer(status, "shipActionResults", new JSONArray());
+		writePlayer(status, "hitReport", new JSONArray());
+		
+		send(status);
+	}
 
 	// TODO turn interuppts
 	// TODO status enum creation
@@ -587,6 +599,7 @@ public class API {
 	 *            - given Player's remaining resources
 	 * @return - true if successful send
 	 */
+	
 	public static boolean send(int status) {
 		
 		switch (status) {
