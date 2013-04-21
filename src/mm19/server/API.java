@@ -1,6 +1,7 @@
 package mm19.server;
 
 import java.util.ArrayList;
+import java.util.Timer;
 
 import mm19.game.Action;
 import mm19.game.Engine;
@@ -52,7 +53,6 @@ public class API {
 
 	public static boolean newData(JSONObject obj, String playerToken) {
 		int playerID;
-		game = new Engine();
 		String playerName;
 		JSONObject mainShipObj;
 		ShipData mainShip;
@@ -82,7 +82,7 @@ public class API {
 						}
 	
 						ships.add(mainShip);
-						playerID = game.playerSet(ships, playerName);
+						playerID = game.playerSet(ships, playerToken);
 						
 						if(playerID == -1) {
 							return false;
@@ -118,15 +118,32 @@ public class API {
 		}
 		
 		ArrayList<Action> actionList;
-		
+		int currPlayerID;
+		int opponentID;
 		try {
 			if (obj.has("playerToken"))  {
 				String playerToken = obj.getString("playerToken");
+				if(playerToken.equals(API.playerToken[0])) {
+					currPlayerID = 0;
+					opponentID = 1;
+				} else  {
+					currPlayerID = 1;
+					opponentID = 0;
+				}
 				
-				if (obj.has("shipActions")
-						&& ((actionList = getActionList((JSONArray) obj
-								.get("shipActions"))) != null)) {
+				if (obj.has("shipActions")) {
+					JSONArray actionListObj = obj.getJSONArray("shipActions");
+					actionList = getActionList(actionListObj);
 					game.playerTurn(playerToken, actionList);
+					
+					writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+					writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+					API.printTurnToLog(currPlayerID);
+					send(currPlayerID);
+					
+					Timer t = new Timer();
+					ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+					t.schedule(new ServerTimerTask(), 50);
 					return true;
 				}
 			}
@@ -271,27 +288,25 @@ public class API {
 	private static Action getAction(JSONObject obj) {
 		String actionID;
 		int shipID;
-		int actionXVar;
-		int actionYVar;
-		int actionExtraVar;
+		int actionX;
+		int actionY;
+		int actionExtra;
 
 		try {
-			if (obj.has("actionID")
-					&& (actionID = obj.getString("actionID")).isEmpty()) {
-				if (obj.has("shipID") && (shipID = obj.getInt("shipID")) != 0) {
-					if (obj.has("actionXVar") && obj.has("actionYVar")) {
-						actionXVar = obj.getInt("actionXVar");
-						actionYVar = obj.getInt("actionYVar");
-					} else
-						actionXVar = actionYVar = -1;
-
-					if (obj.has("actionExtraVar")) {
-						actionExtraVar = obj.getInt("actionExtraVar");
-					} else
-						actionExtraVar = -1;
-
-					return new Action(shipID, actionID, actionXVar, actionYVar,
-							actionExtraVar);
+			if (obj.has("actionID")){
+				actionID = obj.getString("actionID");
+				if(obj.has("ID")) {
+					shipID = obj.getInt("ID");
+					if(obj.has("actionX")) {
+						actionX = obj.getInt("actionX");	
+						if(obj.has("actionY")) {
+							actionY = obj.getInt("actionY");
+							if(obj.has("actionExtra")) {
+								actionExtra = obj.getInt("actionExtra");
+								return new Action(shipID, actionID, actionX, actionY, actionExtra);
+							}
+						}
+					}
 				}
 			}
 		} catch (JSONException e) {
@@ -308,8 +323,6 @@ public class API {
 	 *         such, and null otherwise
 	 */
 	private static ArrayList<Action> getActionList(JSONArray jsonArray) {
-		if (jsonArray.length() != 19)
-			return null;
 		int length = jsonArray.length();
 		ArrayList<Action> list = new ArrayList<Action>();
 		Action tempAction;
@@ -496,8 +509,8 @@ public class API {
 		JSONObject tempPing = new JSONObject();
 
 		try {
-			tempPing.append("distance", ping.dist);
-			tempPing.append("shipID", ping.ship.getID());
+			tempPing.put("distance", ping.dist);
+			tempPing.put("shipID", ping.ship.getID());
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;
@@ -537,8 +550,8 @@ public class API {
 		JSONObject tempResult = new JSONObject();
 
 		try {
-			tempResult.append("ShipID", result.shipID);
-			tempResult.append("result", result.result);
+			tempResult.put("ID", result.shipID);
+			tempResult.put("result", result.result);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;
@@ -546,15 +559,24 @@ public class API {
 		return tempResult;
 	}
 	
-	public void notifyTurn(int status) {
+	/**
+	 * Notifies the player that their turn is about to begin.
+	 * @param status
+	 */
+	public static void notifyTurn(int status) {
 		writePlayer(status, "error", new JSONArray());
 		writePlayer(status, "responseCode", 100);
-		writePlayer(status, "playerName", "");
-		writePlayer(status, "playerToken", "");
-		writePlayer(status, "ships", new JSONArray());
+		writePlayer(status, "playerName", API.playerName[status]);
+		writePlayer(status, "playerToken", API.playerToken[status]);
 		writePlayer(status, "shipActionResults", new JSONArray());
 		writePlayer(status, "hitReport", new JSONArray());
 		
+		if(!API.playerTurnObj[status].has("ships")) {
+			writePlayer(status, "ships", new JSONArray());
+		}
+		if(!API.playerTurnObj[status].has("pingReport")) {
+			writePlayer(status, "pingReport", new JSONArray());
+		}
 		send(status);
 	}
 
@@ -643,7 +665,6 @@ public class API {
 	}
 
 	public static void printTurnToLog(int playerID) {
-		
 		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
 	}
 

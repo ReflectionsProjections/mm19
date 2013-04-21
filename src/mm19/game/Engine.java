@@ -21,7 +21,7 @@ import mm19.server.ShipData;
  */
 public class Engine{
 	private Player[] players;
-
+	private String[] playerTokens;
 	public static final String SHOOT = "F";
 	public static final String BURST_SHOT = "BS";
 	public static final String SONAR = "S";
@@ -35,8 +35,6 @@ public class Engine{
 	public static final String MAINSHIP = "M";
 	public static final String PILOT = "P";
 	
-	private static HashMap<String, Integer> tokenMap;
-	
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
 	 */
@@ -45,7 +43,9 @@ public class Engine{
     	players[0]=null;
     	players[1]=null;
 
-    	tokenMap = new HashMap<String, Integer>();
+    	playerTokens = new String[2];
+    	playerTokens[0] = "";
+    	playerTokens[1] = "";
     }
 	
     /**
@@ -95,15 +95,15 @@ public class Engine{
 		if (!(setupShips && player.isAlive())) {
 			return -1;
 			}
-		if(players[1] == null) {
-			players[1] = player;
+		if(players[0] == null) {
+			players[0] = player;
 		}
-		else if (players[2] == null) {
-			players[2] = player;
+		else if (players[1] == null) {
+			players[1] = player;
 		}
 		else throw new RuntimeException("too many players!");
 		
-		tokenMap.put(playerToken, player.getPlayerID());
+		playerTokens[player.getPlayerID()] = playerToken;
 		
 		ArrayList<ShipData> data = getShipData(player);
 		
@@ -124,18 +124,22 @@ public class Engine{
 	 */
 	public void playerTurn(String playerToken, ArrayList<Action> actions){
 		//Check for valid playerID
-		
-		int playerID = tokenMap.get(playerToken);
+		int playerID;
+		if(playerTokens[0].equals(playerToken)) {
+			playerID = 0;
+		} else {
+			playerID = 1;
+		}
 		
 		Player p=null;
 		Player otherP=null;
-		if(players[1].getPlayerID()==playerID){
-			p=players[1];
-			otherP=players[2];
-		}
-		else if(players[2].getPlayerID()==playerID){
-			p=players[2];
+		if(players[0].getPlayerID()==playerID){
+			p=players[0];
 			otherP=players[1];
+		}
+		else if(players[1].getPlayerID()==playerID){
+			p=players[1];
+			otherP=players[0];
 		}
 		if(p==null){
 			//TODO: just got an invalid player ID
@@ -225,65 +229,66 @@ public class Engine{
 			//Send data to both players
 			int currPlayerID, opponentID;
 			Player opponent;
-			if(players[1].getPlayerID()==p.getPlayerID()){
+			if(players[0].getPlayerID()==p.getPlayerID()){
 				currPlayerID=0;
 				opponentID=1;
-				opponent=players[2];
+				opponent=players[1];
 			} else{
 				currPlayerID=1;
 				opponentID=0;
-				opponent=players[1];
+				opponent=players[0];
 			}
 			//reset player special
 			players[currPlayerID].resetSpecialAbility();
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
-            ArrayList<Ship> ships=players[currPlayerID].getBoard().getShips();
-            Ship tempShip;
+			
             Position tempPos;
             String tempType;
-            for(int i = 0; i < ships.size(); i++){
-                tempShip = ships.get(i);
-                //reset ability flag on all player's ships
-                tempShip.resetAbility();
+            ArrayList<Ship> ships=players[currPlayerID].getBoard().getShips();
+            for(Ship ship : ships){
+                ship.resetAbility();
             }
+            
 			ships=opponent.getBoard().getShips();
-			for(int i = 0; i < ships.size(); i++){
-				tempShip = ships.get(i);
+			for(Ship ship : ships){
 				tempType = null;
-				if(tempShip instanceof DestroyerShip){
+				if(ship instanceof DestroyerShip){
 					tempType = DESTROYER;
-				}else if(tempShip instanceof MainShip){
+				}else if(ship instanceof MainShip){
 					tempType = MAINSHIP;
-				}else if(tempShip instanceof PilotShip){
+				}else if(ship instanceof PilotShip){
 					tempType = PILOT;
 				}
 				String tempOrient="";
 				if(tempType != null){
-					if(opponent.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
+					if(opponent.getBoard().getShipPosition(ship.getID()).orientation == Position.Orientation.HORIZONTAL){
 						tempOrient="H";
 					}else{
 						tempOrient="V";
 					}
-					tempPos=opponent.getBoard().getShipPosition(tempShip.getID());
-					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
+					tempPos=opponent.getBoard().getShipPosition(ship.getID());
+					data.add(new ShipData(ship.getHealth(), ship.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
-		
-			// TODO REVIEW THIS
-			/*
-			API.writePlayerResults(player1, results);
-			API.writePlayerPings(player1, sonar);
-			API.writePlayerHits(player1, hits);
-			//Send some info to the other player!
-			*/
-			API.printTurnToLog(p.getPlayerID());
-			/*
-			API.writePlayerShips(player2, data);
-			API.writePlayerEnemyHits(player2, hits);
-			API.send(notp.getPlayerID());
-			API.send(p.getPlayerID());
-			*/
-
+			
+			ArrayList<SonarReport> opponentSonar = new ArrayList<SonarReport>();
+			for(SonarReport sr : sonar) {
+				opponentSonar.add(new SonarReport(-1, sr.ship));
+			}
+			
+			// Formulate the server response for the current player's turn.
+			API.writePlayerResponseCode(currPlayerID);
+			API.writePlayerResources(currPlayerID, players[currPlayerID].getResources());
+			API.writePlayerShips(currPlayerID, getShipData(players[currPlayerID]));
+			API.writePlayerResults(currPlayerID, results);
+			API.writePlayerPings(currPlayerID, sonar);
+			API.writePlayerHits(currPlayerID, hits);
+			
+			// Send some info to the other player!
+			API.writePlayerShips(opponentID, getShipData(players[opponentID]));
+			API.writePlayerPings(opponentID, opponentSonar);
+			
+			
 		}
 	}
 	
@@ -326,12 +331,12 @@ public class Engine{
 	}
 
 	public int getP1ID() {
-		if(players[1] != null) return players[1].getPlayerID();
+		if(players[0] != null) return players[0].getPlayerID();
 		return -1;
 	}
 
 	public int getP2ID() {
-		if(players[2] != null) return players[2].getPlayerID();
+		if(players[1] != null) return players[1].getPlayerID();
 		return -1;
 	}
 

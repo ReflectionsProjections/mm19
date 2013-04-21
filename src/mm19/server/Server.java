@@ -38,7 +38,7 @@ public class Server {
 	private static int playersConnected;
 
 	private static GameLogger visualizerLog = null;
-	
+	private static String visualizerLogURL = "E:\\Eclipse\\workspace\\mm19\\log.out";
 
 	// Sockets
 	private static ServerSocket socket = null;
@@ -47,6 +47,7 @@ public class Server {
 	// Concurrent stuff
 	private static RequestRunnable[] player;
 	private static ExecutorService threadPool = null;
+	private static boolean starting = false;
 	private static boolean running = false;
 
 	// For communication with the connecting client
@@ -62,9 +63,8 @@ public class Server {
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
 		success = API.initAPI();
-
-		if ( args.length > 1){
-		visualizerLog = new GameLogger(args[0]); }
+		
+		visualizerLog = new GameLogger(Server.visualizerLogURL);
 
 		if (!success) {
 			serverLog.log(Level.SEVERE,
@@ -80,20 +80,23 @@ public class Server {
 		 
 	}
 
+	@SuppressWarnings("unused")
 	private static boolean initServer() {
 
-		clientSockets = new Socket[2];
+		clientSockets = new Socket[MAX_PLAYERS];
 
-		playerToken = new String[2];
-		playerToken[0] = "";
-		playerToken[1] = "";
+		playerToken = new String[MAX_PLAYERS];
+		for(String token : playerToken) {
+			token = "";
+		}
+		
+		connected = new boolean[MAX_PLAYERS];
+		for(boolean c : connected) {
+			c = false;
+		}
 
 		bte = new BasicTextEncryptor();
 		bte.setPassword((new RandomSaltGenerator().generateSalt(10)).toString());
-
-		connected = new boolean[2];
-		connected[0] = false;
-		connected[1] = false;
 
 		// TODO: Set up logging to a file
 		serverLog.setLevel(LOG_LEVEL);
@@ -117,19 +120,19 @@ public class Server {
 	private static void run() {
 		int currPlayerID = -1;
 		serverLog.log(Level.INFO, "Starting server run loop");
-		running = true;
+		starting = true;
 		Socket clientSocket = null;
-		while (running) {
+		// Long polling and connecting/authenticating new players as they connect.
+		while (starting) {
 			try {
 				// Listen for a new connection
 				clientSocket = socket.accept();
 
-				// TODO: Do something more than just drop the player if the max
 				// players are already connected
 				currPlayerID = getValidPlayerID();
 				if (currPlayerID == -1) {
 					serverLog.log(Level.WARNING,
-							"Already at maximum number of players");
+							"The server needs to be restarted");
 					continue;
 				}
 
@@ -220,8 +223,12 @@ public class Server {
 			// thread pool
 			if (currPlayerID != -1) {
 				RequestRunnable task = new RequestRunnable(clientSocket,
-						playerToken[currPlayerID]);
+						playerToken[currPlayerID], currPlayerID);
 				threadPool.execute(task);
+			}
+			
+			if(playersConnected == 2) {
+				API.notifyTurn(0);
 			}
 		}
 
@@ -315,7 +322,6 @@ public class Server {
 
 	public static void winCondition(String authP1) {
 		// TODO This method
-
 	}
 
 	public static synchronized void sendAPI(JSONObject obj) {
@@ -324,6 +330,5 @@ public class Server {
 
 	public static void printToVisualizerLog(String string) {
 		visualizerLog.log(string);
-		
 	}
 }

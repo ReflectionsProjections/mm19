@@ -21,13 +21,15 @@ public class RequestRunnable implements Runnable {
 
 	protected Socket clientSocket = null;
 	protected String playerToken;
+	protected int playerID;
 	
 	protected BufferedReader in = null;
 	
 	
-	public RequestRunnable(Socket clientSocket, String token) {
+	public RequestRunnable(Socket clientSocket, String token, int pID) {
 		this.clientSocket = clientSocket;
 		playerToken = token;
+		playerID = pID;
 	}
 	
 	@Override
@@ -37,7 +39,9 @@ public class RequestRunnable implements Runnable {
 			
 			try {
 				in = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
+				
 				String msg = in.readLine();
+				System.out.println("Recieved turn");
 				JSONObject obj = new JSONObject(msg);
 				Server.sendAPI(obj);
 				
