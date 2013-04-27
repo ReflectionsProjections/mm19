@@ -656,9 +656,13 @@ public class API {
 	public static boolean hasWon(int PlayerID) {
 		if (PlayerID == 0) {
 			Server.winCondition(playerToken[0]);
+			writePlayer(0, "responseCode", 9001);
+			writePlayer(1, "responseCode", -1);
 			return true;
 		} else if (PlayerID == 1) {
 			Server.winCondition(playerToken[1]);
+			writePlayer(1, "responseCode", 9001);
+            writePlayer(0, "responseCode", -1);
 			return true;
 		}
 		return false;

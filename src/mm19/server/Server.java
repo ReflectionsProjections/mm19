@@ -38,7 +38,7 @@ public class Server {
 	private static int playersConnected;
 
 	private static GameLogger visualizerLog = null;
-	private static String visualizerLogURL = "E:\\Eclipse\\workspace\\mm19\\log.out";
+	private static String visualizerLogURL = "/home/josh/gitRepos/mm19/src/log.out";
 
 	// Sockets
 	private static ServerSocket socket = null;
