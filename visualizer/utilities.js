@@ -6,7 +6,7 @@ var util = {
         var show = document.getElementsByName(class_name);
 
         for (var ind = 0; ind < show.length; ind += 1) {
-            show[ind].style.visibility = "visible";
+            show[ind].style.display = "inline";
         }
     },
 
@@ -14,7 +14,7 @@ var util = {
         var hidden = document.getElementsByName(class_name);
 
         for (var ind = 0; ind < hidden.length; ind += 1) {
-            hidden[ind].style.visibility = "hidden";
+            hidden[ind].style.display = "none";
         }
     },
 
@@ -30,7 +30,6 @@ var util = {
 
         return ret_val;
     }
-
 };
 
 

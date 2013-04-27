@@ -1,10 +1,12 @@
 
 
-var CANVAS_HEIGHT = 400;
+var CANVAS_HEIGHT = 440;
 var MARGIN = 20;
 var GAME_HEIGHT = CANVAS_HEIGHT - MARGIN * 2;
 
-
+/*
+	Holds the render state, and functions that render the game
+*/
 var view = {
 
     render_state : {
@@ -19,12 +21,13 @@ var view = {
         document.getElementById("info_bar").style.visibility = "visible";
         util.hide_class("play");
         document.getElementById("controls").style.visibility = "visible";
+        document.getElementById("paper").style.visibility = "visible";
     },
 
     /*
         takes a render_state and game_state and renders game_state and returns new render_state
     */
-    render_game : function (render_state, game_state) {
+    render_game : function () {
         var draw_ships = function(ships, x_offset) {
             util.map_array(function(ship) {
                 var box_width = GAME_HEIGHT / controller.size;
@@ -46,21 +49,20 @@ var view = {
                 var center_x = ship.x * box_width + MARGIN + x_offset * box_width * controller.size;
                 var center_y = ship.y * box_width + MARGIN;
 
-                render_state.shapes.push(render_state.paper.ellipse(center_x, center_y, width, height).attr({"fill" : "#809080"}));
+                view.render_state.shapes.push(view.render_state.paper.ellipse(center_x, center_y, width, height).attr({"fill" : "#809080"}));
             },
             ships);
         };
 
         //set resources
-        document.getElementById("p1_resources").innerHTML = game_state[0].resources;
-        document.getElementById("p2_resources").innerHTML = game_state[1].resources;
+        document.getElementById("p1_resources").innerHTML = model.game_state[0].resources;
+        document.getElementById("p2_resources").innerHTML = model.game_state[1].resources;
         //clear shapes
-        render_state.paper.clear();
+        this.render_state.paper.clear();
+        this.render_state.shapes = [];
         //draw new shapes
-        draw_ships(game_state[0].ships, 0);
-        draw_ships(game_state[1].ships, 1);
-
-        return render_state;
+        draw_ships(model.game_state[0].ships, 0);
+        draw_ships(model.game_state[1].ships, 1);
     }
 };
 

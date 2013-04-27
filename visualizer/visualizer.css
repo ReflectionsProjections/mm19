@@ -1,5 +1,3 @@
-
-
 [class^="icon-"],
 [class*=" icon-"] {
   display: inline-block;
@@ -36,4 +34,44 @@
 
 .icon-arrow-right {
   background-position: -264px -96px;
+}
+
+#wrapper {
+  width : 840px;
+  margin-left : auto;
+  margin-right : auto;
+}
+
+#info_bar {
+  visibility:hidden;
+  width:840px;
+  height:40px;
+}
+
+.player_info {
+  float:left;
+  padding:5px 50px;
+  width : 320px;
+  height : 40px;
+}
+
+.player_name {
+  float:left;
+}
+
+.player_resources {
+  float:right;
+}
+
+#paper {
+  width : 840px;
+  height : 440px;
+  background-color : #00CED1;
+  visibility:hidden;
+}
+
+#controls {
+  text-align: center;
+  list-style: none;
+  visibility:hidden;
 }

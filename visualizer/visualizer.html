@@ -1,85 +1,7 @@
 
 <html>
   <head>
-    <style type="text/css">
-        [class^="icon-"],
-        [class*=" icon-"] {
-          display: inline-block;
-          width: 14px;
-          height: 14px;
-          margin-top: 1px;
-          *margin-right: .3em;
-          line-height: 14px;
-          vertical-align: text-top;
-          background-image: url("glyphicons-halflings.png");
-          background-position: 14px 14px;
-          background-repeat: no-repeat;
-        }
-
-        .icon-backward {
-          background-position: -240px -72px;
-        }
-
-        .icon-play {
-          background-position: -264px -72px;
-        }
-
-        .icon-pause {
-          background-position: -288px -72px;
-        }
-
-        .icon-forward {
-          background-position: -336px -72px;
-        }
-
-        .icon-arrow-left {
-          background-position: -240px -96px;
-        }
-
-        .icon-arrow-right {
-          background-position: -264px -96px;
-        }
-
-        #info_bar {
-          visibility:hidden;
-          width:800px;
-          height:40px;
-        }
-
-        .player_info {
-          float:left;
-          padding:5px 50px;
-          width : 300px;
-          height : 40px;
-        }
-
-        .player_name {
-          float:left;
-        }
-
-        .player_resources {
-          float:right;
-        }
-
-        #paper {
-          width : 800px;
-          height : 400px;
-          background-color : #00CED1;
-        }
-
-        #wrapper {
-          width : 800px;
-          margin-left : auto;
-          margin-right : auto;
-        }
-
-        #controls {
-          text-align: center;
-          list-style: none;
-          visibility:hidden;
-        }
-
-    </style>
+    <link href="visualizer.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     <div id="wrapper">
@@ -98,30 +20,32 @@
       <div id="paper"></div>
       <ul id="controls">
         <li>
-          <p id="turn_number">Turn 0</p>
+          Turn
+          <input type="text" id="turn_number" value="0" maxlength="5" style="width:45;">
+          <button onclick="controller.buttons.set_turn();">Set Turn</button>
         </li>
         <li>
-          <i onclick="controller.buttons.increase_sleep()" class="icon-backward"></i>
+          Frame length (ms)
           <input type="text" id="tick_rate" value="100" maxlength="5" style="width:45;">
-          <i onclick="controller.buttons.decrease_sleep()" class="icon-forward"></i>
         </li>
-        <li class="play">
-          <i onclick="controller.buttons.pause()" class="icon-pause"></i>
+        <li name="play">
+          <i onclick="controller.buttons.increase_sleep();" class="icon-backward"></i>
+          <i onclick="controller.buttons.pause();" class="icon-pause"></i>
+          <i onclick="controller.buttons.decrease_sleep();" class="icon-forward"></i>
         </li>
-        <li class="pause">
-          <i onclick="controller.buttons.play()" class="icon-play"></i>
-        </li>
-        <li class="pause">
-          <i onclick="controller.buttons.step_forward()" class="icon-arrow-left"></i>
-          <i onclick="controller.buttons.step_backward()" class="icon-arrow-right"></i>
+        <li name="pause">
+          <i onclick="controller.buttons.step_backward();" class="icon-arrow-left"></i>
+          <i onclick="controller.buttons.play();" class="icon-play"></i>
+          <i onclick="controller.buttons.step_forward();" class="icon-arrow-right"></i>
         </li>
       </ul>
     </div>
     <script src ="json_parse.js"></script>
     <script src ="raphael.js"></script>
     <script src ="utilities.js"></script>
+    <script src ="model.js"></script>
     <script src ="view.js"></script>
-    <script src ="visualizer.js"></script>
+    <script src ="controller.js"></script>
   </body>
 </html>
 
