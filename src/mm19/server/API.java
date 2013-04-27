@@ -134,16 +134,21 @@ public class API {
 				if (obj.has("shipActions")) {
 					JSONArray actionListObj = obj.getJSONArray("shipActions");
 					actionList = getActionList(actionListObj);
-					game.playerTurn(playerToken, actionList);
-					
-					writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-					writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-					API.printTurnToLog(currPlayerID);
-					send(currPlayerID);
-					
-					Timer t = new Timer();
-					ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
-					t.schedule(new ServerTimerTask(), 50);
+					boolean success = game.playerTurn(playerToken, actionList);
+					if(success){
+						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+						API.printTurnToLog(currPlayerID);
+						send(currPlayerID);
+						
+						Timer t = new Timer();
+						ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+						t.schedule(new ServerTimerTask(), 50);
+					} else{
+						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+						send(currPlayerID);
+					}
 					return true;
 				}
 			}
