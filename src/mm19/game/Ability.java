@@ -26,8 +26,10 @@ public class Ability {
     final public static int BURST_SHOT_DAMAGE = (int)(MISSILE_DAMAGE * BURST_SHOT_EFFECTIVENESS);
     final public static int BURST_SHOT_COST = 250;
     final public static int BURST_SHOT_RADIUS = 2; //3x3 area
+    final public static int BURST_SHOT_DIAMETER = 2*BURST_SHOT_RADIUS - 1;
 
     final public static int SONAR_RADIUS = 3; //5x5 area
+    final public static int SONAR_DIAMETER = 2*SONAR_RADIUS - 1;
     final public static int SONAR_COST = 110;
 
     final public static int MOVE_COST_PER_UNIT_LENGTH = 50;
@@ -187,8 +189,8 @@ public class Ability {
         int NECornerX = targetX - BURST_SHOT_RADIUS + 1;
         int NECornerY = targetY - BURST_SHOT_RADIUS + 1;
 
-        for (int x = NECornerX; x < NECornerX + BURST_SHOT_RADIUS; x++) {
-            for (int y = NECornerY; y < NECornerY + BURST_SHOT_RADIUS; y++) {
+        for (int x = NECornerX; x < NECornerX + BURST_SHOT_DIAMETER; x++) {
+            for (int y = NECornerY; y < NECornerY + BURST_SHOT_DIAMETER; y++) {
                 Ship ship = board.getShip(x, y);
                 boolean hitSuccessful;
                 if (ship != null) {
@@ -237,11 +239,11 @@ public class Ability {
 
         ArrayList<SonarReport> sonarReports = new ArrayList<SonarReport>();
         Board board = targetPlayer.getBoard();
-        int NECornerX = targetX - BURST_SHOT_RADIUS + 1;
-        int NECornerY = targetY - BURST_SHOT_RADIUS + 1;
+        int NECornerX = targetX - SONAR_RADIUS + 1;
+        int NECornerY = targetY - SONAR_RADIUS + 1;
 
-        for (int x = NECornerX; x < NECornerX + SONAR_RADIUS; x++) {
-            for (int y = NECornerY; y < NECornerY + SONAR_RADIUS; y++) {
+        for (int x = NECornerX; x < NECornerX + SONAR_DIAMETER; x++) {
+            for (int y = NECornerY; y < NECornerY + SONAR_DIAMETER; y++) {
                 pingCoordinate(board, sonarReports, targetX, targetY, x, y);
             }
         }
