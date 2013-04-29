@@ -210,6 +210,25 @@ public class API {
 		return null;
 
 	}
+	
+	/**
+	 * Handle setting up the next turn once this player's turn has ended.
+	 * @param currPlayerID
+	 */
+	public static void sendTurn(int currPlayerID){
+		writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+		writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+		API.printTurnToLog(currPlayerID);
+		send(currPlayerID);
+		
+		int opponentID = 1;
+		if (currPlayerID == 0) opponentID = 1;
+		if (currPlayerID == 1) opponentID = 0;
+		
+		Timer t = new Timer();
+		ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+		t.schedule(new ServerTimerTask(), 50);
+	}
 
 	/**
 	 * @param obj

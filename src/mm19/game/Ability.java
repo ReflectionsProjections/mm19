@@ -49,6 +49,40 @@ public class Ability {
         }
     }
 
+    /**
+     * Determines who has won a tie game
+     * The player with the highest total ship health wins
+     * If tied, the player with the most resources wins
+     * If tied, player 2 wins
+     * 
+     * @param p1 The first player that tied
+     * @param p2 The second player that tied
+     * @return returns the player that has been chosen as victor
+     */
+    public static Player tieBreaker(Player p1, Player p2){
+    	int p1Health = 0;
+    	int p2Health = 0;
+    	Board board = p1.getBoard();
+        ArrayList<Ship> ships = board.getShips();
+        for (Ship ship : ships) {
+            if(ship.canGenerateResources()) {
+                p1Health += ship.getHealth();
+            }
+        }
+        board = p2.getBoard();
+        ships = board.getShips();
+        for (Ship ship : ships) {
+            if(ship.canGenerateResources()) {
+                p2Health += ship.getHealth();
+            }
+        }
+        if(p1Health > p2Health) return p1;
+        if(p2Health > p1Health) return p2;
+        
+        if(p1.getResources() > p2.getResources()) return p1;
+        if(p2.getResources() > p1.getResources()) return p2;
+    	return p2;
+    }
 
     /**
      * Updates the player's resources by polling the boats they own for resources generated.
