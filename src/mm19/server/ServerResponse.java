@@ -9,7 +9,7 @@ import mm19.game.HitReport;
  */
 public class ServerResponse {
 	
-	public List<ActionResult> shipActionResults;
+	public List<ShipActionResult> shipActionResults;
 	public int responseCode;
 	public String playerToken;
 	public List<HitReport> hitReport;
