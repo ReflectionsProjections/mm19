@@ -3,7 +3,6 @@ package mm19.game.player;
 import java.util.ArrayList;
 
 import mm19.game.board.Board;
-import mm19.game.board.Position;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.Ship;
 
@@ -17,7 +16,7 @@ public class Player {
     private static int nextPlayerID = 0;
 
     final private int playerID;
-    final private String playerName;
+    private String name;
 
     private Board board = new Board();
     private int resources;
@@ -30,7 +29,7 @@ public class Player {
      * @param resources The Player's initial resources
      */
     public Player(int resources) {
-    	playerName = "";
+    	name = "";
         playerID = nextPlayerID;
         nextPlayerID++;
         this.resources = resources;
@@ -43,7 +42,7 @@ public class Player {
      * @param resources The Player's initial resources
      */
     public Player(int resources, int ID, String name) {
-    	playerName = name;
+    	this.name = name;
         playerID = ID;
         this.resources = resources;
     }
@@ -122,8 +121,17 @@ public class Player {
     /**
      * @return the player's name
      */
-    public String getPlayerName(){
-    	return playerName;
+    public String getName(){
+    	return name;
+    }
+
+    /**
+     * Sets the player's name
+     *
+     * @param playerName Name to set the player to
+     */
+    public void setName(String playerName) {
+        name = playerName;
     }
     
     /**

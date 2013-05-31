@@ -1,6 +1,6 @@
 package mm19.exceptions;
 
-public class EngineException extends RuntimeException{
+public class EngineException extends Exception{
 	public EngineException(){
 		super();
 	}

@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mm19.game.Constants;
 import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.json.JSONArray;
@@ -28,7 +29,7 @@ public class Server {
 
 	// Server constants for now, configurable later
 	public static final int PORT = 6969;
-	public static final int MAX_PLAYERS = 2;
+
 	public static final int MAX_THREADS = 8;
 	public static final String LOG_PATH = "server_log.txt";
 	public static final Level LOG_LEVEL = Level.INFO;
@@ -62,13 +63,13 @@ public class Server {
 
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+        //TODO I think something should happen with 'success' before it is writen again... -Eric
 		success = API.initAPI();
 		
 		visualizerLog = new GameLogger(Server.visualizerLogURL);
 
 		if (!success) {
-			serverLog.log(Level.SEVERE,
-					"Fatal error: unable to start server. Bailing out.");
+			serverLog.log(Level.SEVERE, "Fatal error: unable to start server. Bailing out.");
 			System.exit(1);
 		}
 
@@ -83,19 +84,21 @@ public class Server {
 	@SuppressWarnings("unused")
 	private static boolean initServer() {
 
-		clientSockets = new Socket[MAX_PLAYERS];
+		clientSockets = new Socket[Constants.PLAYER_COUNT];
 
-		playerToken = new String[MAX_PLAYERS];
-		for(String token : playerToken) {
-			token = "";
+		playerToken = new String[Constants.PLAYER_COUNT];
+		for(int i = 0; i < playerToken.length; i++) {
+			playerToken[i] = "";
 		}
 		
-		connected = new boolean[MAX_PLAYERS];
-		for(boolean c : connected) {
-			c = false;
+		connected = new boolean[Constants.PLAYER_COUNT];
+		for(int i = 0; i < connected.length; i++) {
+			connected[i] = false;
 		}
 
 		bte = new BasicTextEncryptor();
+
+        //TODO We are calling to string on an array here
 		bte.setPassword((new RandomSaltGenerator().generateSalt(10)).toString());
 
 		// TODO: Set up logging to a file
@@ -131,24 +134,21 @@ public class Server {
 				// players are already connected
 				currPlayerID = getValidPlayerID();
 				if (currPlayerID == -1) {
-					serverLog.log(Level.WARNING,
-							"The server needs to be restarted");
+					serverLog.log(Level.WARNING, "The server needs to be restarted");
 					continue;
 				}
 
 				serverLog.log(Level.INFO, "Connection received.");
-				serverLog.log(Level.INFO,
-						"Waiting on player for new player data.");
+				serverLog.log(Level.INFO, "Waiting on player for new player data.");
 
-				in = new BufferedReader(new InputStreamReader(
-						clientSocket.getInputStream()));
+				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 
 				// Blocks until it gets a response from the client, hopefully a
 				// JSONObject with a playerName key.
 				String s = in.readLine();
 
-				serverLog.log(Level.INFO, "Recieved player info");
+				serverLog.log(Level.INFO, "Received player info");
 
 				try {
 					// Check to see if we are sent valid data.
@@ -156,9 +156,10 @@ public class Server {
 					if (obj.has("playerName")) {
 						// Create the player token
 						String name = obj.getString("playerName");
-						name = name
-								+ (new RandomSaltGenerator().generateSalt(10)
-										.toString());
+
+                        //TODO We are calling toString on an array here
+						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
+
 						clientSockets[currPlayerID] = clientSocket;
 						playerToken[currPlayerID] = name;
 						connected[currPlayerID] = true;
@@ -311,7 +312,6 @@ public class Server {
 			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
 					true);
 			out.println(player1);
-			//System.out.println(player1);
 			out.flush();
 
 		} catch (IOException e) {

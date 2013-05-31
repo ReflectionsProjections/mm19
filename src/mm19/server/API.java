@@ -3,11 +3,8 @@ package mm19.server;
 import java.util.ArrayList;
 import java.util.Timer;
 
-import mm19.game.Action;
-import mm19.game.Engine;
-import mm19.game.HitReport;
-import mm19.game.ShipActionResult;
-import mm19.game.SonarReport;
+import mm19.game.*;
+import mm19.game.board.Position;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
@@ -25,82 +22,99 @@ import org.json.JSONObject;
  * 
  */
 public class API {
+    //TODO: This file needs more javadoc
+
+    /*
+     * TODO Static methods should only operate on their parameters, not class fields.
+     * If we really want a singleton, then just instantiate one API object.
+     */
 
 	private static JSONObject[] playerTurnObj;
-	private static String[] playerToken;
-	private static String[] playerName;
-	private static Engine game;
-	private static int ID = 0;
-	private static final int MAX_SIZE = 100; // temporary holder variable move to
-										// constants
 
-	public static boolean initAPI() {
-		playerTurnObj = new JSONObject[2];
-		playerTurnObj[0] = new JSONObject();
-		playerTurnObj[1] = new JSONObject();
-		
-		playerToken = new String[2];
-		playerToken[0] = "";
-		playerToken[1] = "";
-		
-		playerName = new String[2];
-		playerName[0] = "";
-		playerName[1] = "";
-		
+    //TODO Move playerNames to a field in Player class and access with Engine and Player methods
+	private static String[] playerNames;
+	private static Engine game;
+
+    //TODO Eliminate current API management of game state.  Such behavior crosses over class responsibility boundaries.
+	private static int ID = 0;
+
+    /**
+     * TODO Description goes here
+     *
+     * @return Boolean that always returns true for some reason TODO See if this can be changed to a void function
+     */
+    public static boolean initAPI() {
+		playerTurnObj = new JSONObject[Constants.PLAYER_COUNT];
+        playerNames = new String[Constants.PLAYER_COUNT];
+
+        for(int i = 0; i < Constants.PLAYER_COUNT; i++) {
+            playerTurnObj[i] = new JSONObject();
+            playerNames[i] = "";
+        }
 		game = new Engine();
 		return true;
 	}
 
-	public static boolean newData(JSONObject obj, String playerToken) {
+
+
+    /**
+     * TODO Description goes here
+     *
+     * @param json TODO: This file needs more javadoc
+     * @param playerToken TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
+	public static boolean newData(JSONObject json, String playerToken) {
+        //TODO: Determine better name for method -Eric
 		int playerID;
 		String playerName;
-		JSONObject mainShipObj;
+		JSONObject mainShipJSON;
 		ShipData mainShip;
-		JSONArray shiparr;
+		JSONArray shipsJSONArray;
 		ArrayList<ShipData> ships;
 
 		try {
-			if (obj.has("playerName")
-					&& ((playerName = obj.getString("playerName")) != null)) {
-				
-				if (obj.has("mainShip")
-						&& ((mainShipObj = (JSONObject) obj.get("mainShip")) != null)) {
-					
-						mainShipObj.put("type", "M");
-						mainShip = initShip(mainShipObj);
-						
-					if (obj.has("ships")
-							&& ((shiparr = (JSONArray) obj.get("ships")) != null)) {
-						
-						ships = new ArrayList<ShipData>();
-						
-						for(int i = 0; i < 4; i++) {
-							ShipData tempData = initShip(shiparr.getJSONObject(i));
-							if(tempData != null) {
-								ships.add(tempData);
-							}
-						}
-	
-						ships.add(mainShip);
-						playerID = game.playerSet(ships, playerToken);
-						
-						if(playerID == -1) {
-							return false;
-						}
-						
-						API.playerName[playerID] = playerName;
-						API.playerToken[playerID] = playerToken;
-						
-						writePlayer(playerID, "playerToken", playerToken);
-						writePlayer(playerID, "playerName", playerName);
-						writePlayer(playerID, "shipActionResults", new JSONArray());
-						writePlayer(playerID, "hitReport", new JSONArray());
-						writePlayer(playerID, "pingReport", new JSONArray());
-						send(playerID);
-						
-						return true;
-					}
-				}
+            if(json.has("playerName") && json.has("mainShip") && json.has("ships")) {
+                playerName = json.getString("playerName");
+                mainShipJSON = json.getJSONObject("mainShip");
+                shipsJSONArray = json.getJSONArray("ships");
+            } else {
+                return false;
+            }
+
+			if ( playerName != null && mainShipJSON != null && shipsJSONArray != null) {
+                mainShipJSON.put("type", MainShip.IDENTIFIER);
+                mainShip = ShipData.fromJSON(mainShipJSON);
+
+                ships = ShipData.fromJSONArray(shipsJSONArray);
+
+                //TODO determine if pruning excess ship declarations is better than rejecting request.
+                //TODO Determine what happens if fewer than Constants.MAX_SHIPS-1 are in the array.
+                ArrayList<ShipData> temp = new ArrayList<ShipData>();
+                for(int i = 0; i < Constants.MAX_SHIPS-1; i++) {
+                    temp.add(ships.get(i));
+                }
+                ships = temp;
+                ships.add(mainShip);
+
+                //TODO: Determine what playerSet does and rename method -Eric
+                playerID = game.playerSet(ships, playerToken);
+
+                if(playerID < 0 || playerID >= Constants.PLAYER_COUNT) {
+                    return false;
+                }
+
+                playerNames[playerID] = playerName;
+                game.setPlayerToken(playerID, playerToken);
+
+                writePlayer(playerID, "playerToken", playerToken);
+                writePlayer(playerID, "playerName", playerName);
+                writePlayer(playerID, "shipActionResults", new JSONArray());
+                writePlayer(playerID, "hitReport", new JSONArray());
+                writePlayer(playerID, "pingReport", new JSONArray());
+                send(playerID);
+
+                return true;
 			}
 			
 		} catch (JSONException e) {
@@ -108,50 +122,61 @@ public class API {
 		}
 
 		return false;
-
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param obj TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean decodeTurn(JSONObject obj) {
 		// sanity check
-		if (playerToken[0].equals("") || playerToken[1].equals("")) {
-			return false;
-		}
-		
-		ArrayList<Action> actionList;
-		int currPlayerID;
-		int opponentID;
+        //TODO Maintain a game state variable (enum) and check it instead of seeing if all players have a token
+        for (int i = 0; i < Constants.PLAYER_COUNT; i++) {
+            if(game.getPlayerTokenByID(i).equals("")) {
+                return false;
+            }
+        }
+
 		try {
-			if (obj.has("playerToken"))  {
-				String playerToken = obj.getString("playerToken");
-				if(playerToken.equals(API.playerToken[0])) {
-					currPlayerID = 0;
-					opponentID = 1;
-				} else  {
-					currPlayerID = 1;
-					opponentID = 0;
-				}
-				
-				if (obj.has("shipActions")) {
-					JSONArray actionListObj = obj.getJSONArray("shipActions");
-					actionList = getActionList(actionListObj);
-					boolean success = game.playerTurn(playerToken, actionList);
-					if(success){
-						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-						API.printTurnToLog(currPlayerID);
-						send(currPlayerID);
-						
-						Timer t = new Timer();
-						ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
-						t.schedule(new ServerTimerTask(), 50);
-					} else{
-						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-						send(currPlayerID);
-					}
-					return true;
-				}
-			}
+            String playerToken;
+            int currPlayerID;
+            int opponentID;
+
+            if(obj.has("playerToken") && obj.has("shipActions")) {
+                //TODO Create method getPlayerByToken
+                playerToken = obj.getString("playerToken");
+                currPlayerID = game.getPlayerIDByToken(playerToken);
+
+                if(currPlayerID == -1){
+                    return false;
+                }
+
+                opponentID = Engine.getOpponentID(currPlayerID);
+
+            } else {
+                return false;
+            }
+
+            JSONArray actionListObj = obj.getJSONArray("shipActions");
+            ArrayList<Action> actionList = Action.fromJSONArray(actionListObj);
+
+            boolean success = game.playerTurn(playerToken, actionList);
+
+            writePlayer(currPlayerID, "playerToken", playerToken);
+            writePlayer(currPlayerID, "playerName", playerNames[currPlayerID]);
+            send(currPlayerID);
+
+            if(success){
+                printTurnToLog(currPlayerID);
+
+                Timer t = new Timer();
+                ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+                //TODO replace number with constant
+                t.schedule(new ServerTimerTask(), 50);
+            }
+            return true;
 
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -159,237 +184,102 @@ public class API {
 		return false;
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param obj TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	private static ShipData initShip(JSONObject obj) {
+        //TODO Determine why genShip (now moved to ShipData class) and initShip do essentially the same thing...
 		int health;
 		String type;
 		int xCoord;
 		int yCoord;
-		String orientation;
+		String orientationIdentifier;
 
 		try {
-			if (obj.has("type") 
-					&& !(type = obj.getString("type")).equals("")) {
-				
-				if (obj.has("xCoord") && (xCoord = obj.getInt("xCoord")) > -1
-						&& xCoord < MAX_SIZE) {
-					
-					if (obj.has("yCoord")
-							&& (yCoord = obj.getInt("yCoord")) > -1
-							&& yCoord < MAX_SIZE) {
-						
-						if (obj.has("orientation")
-								&& !(orientation = obj.getString("orientation"))
-										.equals("")) {
-							// Success
-							health = -1;
-							if(type.equals("P")) {
-								health = PilotShip.HEALTH;
-							}
-							else if(type.equals("D")) {
-								health = DestroyerShip.HEALTH;
-							}
-							else if(type.equals("M")) {
-								health = MainShip.HEALTH;
-							}
-							
-							if(health == -1)
-								return null;
-							
-							return new ShipData(health, ID++, type, xCoord,
-									yCoord, orientation);
-						}
-					}
-				}
+            if(obj.has("type") && obj.has("xCoord") && obj.has("yCoord") && obj.has("orientation")) {
+                type = obj.getString("type");
+                xCoord = obj.getInt("xCoord");
+                yCoord = obj.getInt("yCoord");
+                orientationIdentifier = obj.getString("orientation");
+
+                health = -1;
+                //TODO Try to find a better way to handle this
+                //TODO Determine why health is initialized here with specific values as it is dependent on game state
+                if(type.equals(PilotShip.IDENTIFIER)) {
+                    health = PilotShip.HEALTH;
+                } else if(type.equals(DestroyerShip.IDENTIFIER)) {
+                    health = DestroyerShip.HEALTH;
+                } else if(type.equals(MainShip.IDENTIFIER)) {
+                    health = MainShip.HEALTH;
+                }
+            } else {
+                return null;
+            }
+
+			if (!type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE && yCoord > -1
+                    && yCoord < Constants.BOARD_SIZE && !orientationIdentifier.equals("") && health != -1) {
+
+                Position.Orientation orientation = Position.getOrientationByIdentifier(orientationIdentifier);
+
+                //TODO Determine why API is trying to manage shipIDs
+                return new ShipData(health, ID++, type, xCoord, yCoord, orientation);
 			}
 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		// Failure
 		return null;
-
 	}
 	
 	/**
 	 * Handle setting up the next turn once this player's turn has ended.
-	 * @param currPlayerID
+     *
+	 * @param currPlayerID TODO: This file needs more javadoc
 	 */
 	public static void sendTurn(int currPlayerID){
-		writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-		writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-		API.printTurnToLog(currPlayerID);
+		writePlayer(currPlayerID, "playerToken", game.getPlayerTokenByID(currPlayerID));
+		writePlayer(currPlayerID, "playerName", playerNames[currPlayerID]);
+		printTurnToLog(currPlayerID);
 		send(currPlayerID);
-		
-		int opponentID = 1;
-		if (currPlayerID == 0) opponentID = 1;
-		if (currPlayerID == 1) opponentID = 0;
-		
-		Timer t = new Timer();
+
+		int opponentID = Engine.getOpponentID(currPlayerID);
+
+		Timer timer = new Timer();
 		ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
-		t.schedule(new ServerTimerTask(), 50);
+        //TODO Make constant for number
+		timer.schedule(new ServerTimerTask(), 50);
 	}
 
-	/**
-	 * @param obj
-	 * @return returns a valid ship if the given JSONObject contains such, null
-	 *         otherwise
-	 */
-	private static ShipData getShip(JSONObject obj) {
-		int health;
-		int ID;
-		String type;
-		int xCoord;
-		int yCoord;
-		String orientation;
-
-		try {
-			if (obj.has("health") && (health = obj.getInt("health")) != 0) {
-				if (obj.has("ID") && (ID = obj.getInt("ID")) != 0) {
-					if (obj.has("type")
-							&& (type = obj.getString("type")).equals("")) {
-						if (obj.has("xCoord")
-								&& (xCoord = obj.getInt("xCoord")) > -1
-								&& xCoord < MAX_SIZE) {
-							if (obj.has("yCoord")
-									&& (yCoord = obj.getInt("yCoord")) > -1
-									&& yCoord < MAX_SIZE) {
-								if (obj.has("orientation")
-										&& !(orientation = obj
-												.getString("orientation"))
-												.equals("")) {
-									// Success
-									return new ShipData(health, ID, type,
-											xCoord, yCoord, orientation);
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Failure
-		return null;
-	}
-
-	/**
-	 * @param jsonArray
-	 * @return returns the full arrayList of 20 valid ships if the given
-	 *         JSONArray contains such, any error will cause this function
-	 *         return null
-	 */
-	private static ArrayList<ShipData> getShipList(JSONArray jsonArray) {
-
-		if (jsonArray.length() != 19)
-			return null;
-		int length = jsonArray.length();
-		ArrayList<ShipData> list = new ArrayList<ShipData>();
-		ShipData tempShip;
-		JSONObject tempJson;
-		while (length > 0) {
-			length--;
-			try {
-				tempJson = jsonArray.getJSONObject(length);
-				if ((tempShip = getShip(tempJson)) != null)
-					list.add(tempShip);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return list;
-
-	}
-
-	/**
-	 * @param obj
-	 * @return - returns the associated Action in the given JSON object contains
-	 *         a valid Action, null otherwise
-	 */
-	private static Action getAction(JSONObject obj) {
-		String actionID;
-		int shipID;
-		int actionX;
-		int actionY;
-		int actionExtra;
-
-		try {
-			if (obj.has("actionID")){
-				actionID = obj.getString("actionID");
-				if(obj.has("ID")) {
-					shipID = obj.getInt("ID");
-					if(obj.has("actionX")) {
-						actionX = obj.getInt("actionX");	
-						if(obj.has("actionY")) {
-							actionY = obj.getInt("actionY");
-							if(obj.has("actionExtra")) {
-								actionExtra = obj.getInt("actionExtra");
-								return new Action(shipID, actionID, actionX, actionY, actionExtra);
-							}
-						}
-					}
-				}
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Failure
-		return null;
-	}
-
-	/**
-	 * @param jsonArray
-	 * @return returns the valid List of Actions if the given JSONarray contains
-	 *         such, and null otherwise
-	 */
-	private static ArrayList<Action> getActionList(JSONArray jsonArray) {
-		int length = jsonArray.length();
-		ArrayList<Action> list = new ArrayList<Action>();
-		Action tempAction;
-		JSONObject tempJson;
-		while (length > 0) {
-			length--;
-			try {
-				tempJson = jsonArray.getJSONObject(length);
-				if ((tempAction = getAction(tempJson)) != null)
-					list.add(tempAction);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param ships
-	 *            - array list of current player ships/status
-	 * @return - true if sucessful write
+    /**
+     * TODO Description goes here
+     *
+	 * @param status enum that tells us to write to player1, player2 or both
+	 * @param ships ArrayList of current player's shipData
+	 * @return - boolean indicating if write was successful
 	 */
 	public static boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
-		JSONArray shipsJson = new JSONArray();
-		JSONObject tempShip;
-		int length = ships.size();
-		while (length > 0) {
-			length--;
-			if ((tempShip = makeShipJSON(ships.get(length))) != null)
-				shipsJson.put(tempShip);
+		JSONArray shipDataJSONArray = new JSONArray();
+
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = ships.size()-1; i >= 0; i--) {
+            JSONObject shipDataJSON = makeShipJSON(ships.get(i));
+			if (shipDataJSON != null) {
+				shipDataJSONArray.put(shipDataJSON);
+            }
 		}
-		if (writePlayer(status, "ships", (Object) shipsJson))
-			return true;
-		return false;
+
+		return writePlayer(status, "ships", shipDataJSONArray);
 	}
 
 	/**
-	 * @param data
-	 *            - the data of a given ship
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param data the data of a given ship
+	 * @return JSONObject containing said data
 	 */
 	private static JSONObject makeShipJSON(ShipData data) {
 		JSONObject tempShip = new JSONObject();
@@ -407,88 +297,112 @@ public class API {
 		}
 		return tempShip;
 	}
-	
+
+    /**
+     * TODO Description goes here
+     *
+     * @param status TODO: This file needs more javadoc
+     * @param message TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean writePlayerError(int status, String message) {
 		try {
-			API.playerTurnObj[status].append("error", message);
+			playerTurnObj[status].append("error", message);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
 		}
 		return true;
 	}
-	
-	public static boolean writePlayerResponseCode(int status) {
+
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
+	public static boolean writePlayerResponseCode(int playerID) {
 		try {
-			if(API.playerTurnObj[status].has("error")) {
-				int length = API.playerTurnObj[status].getJSONArray("error").length();
+
+            //TODO Rearrange code so there is only a single writePlayer call.
+			if(playerTurnObj[playerID].has("error")) {
+				int length = playerTurnObj[playerID].getJSONArray("error").length();
 				if(length > 0) {
-					return writePlayer(status, "responseCode", 400);
+					return writePlayer(playerID, "responseCode", 400);
 				}
-				return writePlayer(status, "responseCode", 200);
-			}
-			else {
-				API.playerTurnObj[status].put("error", new JSONArray());
-				return writePlayer(status, "responseCode", 200);
+				return writePlayer(playerID, "responseCode", 200);
+			} else {
+				playerTurnObj[playerID].put("error", new JSONArray());
+				return writePlayer(playerID, "responseCode", 200);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		return false;
 	}
-	
-	public static boolean writePlayerResources(int status, int resources) {
-		return writePlayer(status, "resources", status);
+
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID TODO: This file needs more javadoc
+     * @param resources TODO: This file needs more javadoc
+     * @return Boolean indicating if write is successful
+     */
+	public static boolean writePlayerResources(int playerID, int resources) {
+		return writePlayer(playerID, "resources", resources);
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param hits
-	 *            - array list of current player hit reports
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param hits array list of current player hit reports
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerHits(int status, ArrayList<HitReport> hits) {
-		JSONArray hitsJson = new JSONArray();
-		JSONObject tempHit;
-		int length = hits.size();
-		while (length > 0) {
-			length--;
-			if ((tempHit = makeHitJSON(hits.get(length))) != null)
-				hitsJson.put(tempHit);
+	public static boolean writePlayerHits(int playerID, ArrayList<HitReport> hits) {
+		JSONArray hitReportJSONArray = new JSONArray();
+
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = hits.size()-1; i >= 0; i--) {
+            JSONObject hitReportJSON = makeHitJSON(hits.get(i));
+			if (hitReportJSON != null) {
+				hitReportJSONArray.put(hitReportJSON);
+            }
 		}
-		if (writePlayer(status, "hitReport", hitsJson))
-			return true;
-		return false;
+
+		return writePlayer(playerID, "hitReport", hitReportJSONArray);
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param hits
-	 *            - array list of current player hit reports
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param hits array list of current player hit reports
+	 * @return Boolean that indicates if write was successful
 	 */
-	public static boolean writePlayerEnemyHits(int status, ArrayList<HitReport> hits) {
-		JSONArray hitsJson = new JSONArray();
-		JSONObject tempHit;
-		int length = hits.size();
-		while (length > 0) {
-			length--;
-			if ((tempHit = makeHitJSON(hits.get(length))) != null)
-				hitsJson.put(tempHit);
-		}
-		if (writePlayer(status, "enemyHitReport", hitsJson))
-			return true;
-		return false;
+	public static boolean writePlayerEnemyHits(int playerID, ArrayList<HitReport> hits) {
+        //TODO This function is identical to writePlayerHits except for a single string... wtf
+        JSONArray hitReportJSONArray = new JSONArray();
+
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = hits.size()-1; i >= 0; i--) {
+            JSONObject hitReportJSON = makeHitJSON(hits.get(i));
+            if (hitReportJSON != null) {
+                hitReportJSONArray.put(hitReportJSON);
+            }
+        }
+
+        return writePlayer(playerID, "enemyHitReport", hitReportJSONArray);
 	}
 
 	/**
-	 * @param report
-	 *            - the data of a given hitreport
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param report the data of a given HitReport
+	 * @return JSONObject containing the HitReport's data
 	 */
 	private static JSONObject makeHitJSON(HitReport report) {
+        //TODO Move to HitReport class and name it toJSON()
 		JSONObject tempHit = new JSONObject();
 		try {
 			tempHit.put("xCoord", report.x);
@@ -503,75 +417,78 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param pings
-	 *            - array list of current player pings
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param sonarReports array list of current player sonarReports
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerPings(int status, ArrayList<SonarReport> pings) {
-		JSONArray pingsJson = new JSONArray();
-		JSONObject tempPing;
-		int length = pings.size();
-		while (length > 0) {
-			length--;
-			if ((tempPing = makePingJSON(pings.get(length))) != null)
-				pingsJson.put(tempPing);
-		}
-		if (writePlayer(status, "pingReport", pingsJson))
-			return true;
+	public static boolean writePlayerPings(int playerID, ArrayList<SonarReport> sonarReports) {
+		JSONArray pingReportsJSON = new JSONArray();
 
-		return false;
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = sonarReports.size()-1; i >= 0; i--) {
+            JSONObject pingReport = makePingReportJSON(sonarReports.get(i));
+			if (pingReport != null) {
+				pingReportsJSON.put(pingReport);
+            }
+		}
+
+        return writePlayer(playerID, "pingReport", pingReportsJSON);
 	}
 
 	/**
-	 * @param ping
-	 *            - the data of a given ping
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param sonarReport A SonarReport
+	 * @return JSONObject containing the SonarReport's data
 	 */
-	private static JSONObject makePingJSON(SonarReport ping) {
-		JSONObject tempPing = new JSONObject();
+	private static JSONObject makePingReportJSON(SonarReport sonarReport) {
+        //TODO Move to SonarReport class and name it toJSON()
+		JSONObject pingReportJSON = new JSONObject();
 
 		try {
-			tempPing.put("distance", ping.dist);
-			tempPing.put("shipID", ping.ship.getID());
+			pingReportJSON.put("distance", sonarReport.dist);
+			pingReportJSON.put("shipID", sonarReport.ship.getID());
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;
 		}
-		return tempPing;
+		return pingReportJSON;
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param results
-	 *            - array list of current action results
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID player to write to
+	 * @param shipActionResults array list of current action results
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerResults(int status,
-			ArrayList<ShipActionResult> results) {
-		JSONArray resultsJson = new JSONArray();
-		JSONObject tempResult;
-		int length = results.size();
-		while (length > 0) {
-			length--;
-			if ((tempResult = makeResultJSON(results.get(length))) != null)
-				resultsJson.put(tempResult);
-		}
-		if (writePlayer(status, "shipActionResults", (Object) resultsJson))
-			return true;
+	public static boolean writePlayerResults(int playerID, ArrayList<ShipActionResult> shipActionResults) {
+		JSONArray shipActionResultsJSONArray = new JSONArray();
 
-		return false;
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = shipActionResults.size()-1; i >= 0; i--) {
+            JSONObject shipActionResultJSON = makeResultJSON(shipActionResults.get(i));
+			if (shipActionResultJSON != null) {
+				shipActionResultsJSONArray.put(shipActionResultJSON);
+            }
+		}
+
+        return writePlayer(playerID, "shipActionResults", shipActionResultsJSONArray);
 	}
 
 	/**
-	 * @param result
-	 *            - the data of a given result
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param result A ShipActionResult
+	 * @return JSONObject containing the ShipActionResult's data
 	 */
 	private static JSONObject makeResultJSON(ShipActionResult result) {
-		JSONObject tempResult = new JSONObject();
+        //TODO Move to ShipActionResult and rename as toJSON()
+        //TODO Rename function
+        //TODO Naming: result and tempResult...
+        JSONObject tempResult = new JSONObject();
 
 		try {
 			tempResult.put("ID", result.shipID);
@@ -585,52 +502,40 @@ public class API {
 	
 	/**
 	 * Notifies the player that their turn is about to begin.
-	 * @param status
+     *
+	 * @param playerID Player to notify
 	 */
-	public static void notifyTurn(int status) {
-		writePlayer(status, "error", new JSONArray());
-		writePlayer(status, "responseCode", 100);
-		writePlayer(status, "playerName", API.playerName[status]);
-		writePlayer(status, "playerToken", API.playerToken[status]);
-		writePlayer(status, "shipActionResults", new JSONArray());
-		writePlayer(status, "hitReport", new JSONArray());
+	public static void notifyTurn(int playerID) {
+        //TODO Create constants for strings and codes
+		writePlayer(playerID, "error", new JSONArray());
+		writePlayer(playerID, "responseCode", 100);
+		writePlayer(playerID, "playerName", playerNames[playerID]);
+		writePlayer(playerID, "playerToken", game.getPlayerTokenByID(playerID));
+		writePlayer(playerID, "shipActionResults", new JSONArray());
+		writePlayer(playerID, "hitReport", new JSONArray());
 		
-		if(!API.playerTurnObj[status].has("ships")) {
-			writePlayer(status, "ships", new JSONArray());
+		if(!playerTurnObj[playerID].has("ships")) {
+			writePlayer(playerID, "ships", new JSONArray());
 		}
-		if(!API.playerTurnObj[status].has("pingReport")) {
-			writePlayer(status, "pingReport", new JSONArray());
+		if(!playerTurnObj[playerID].has("pingReport")) {
+			writePlayer(playerID, "pingReport", new JSONArray());
 		}
-		send(status);
+		send(playerID);
 	}
 
 	// TODO turn interuppts
-	// TODO status enum creation
+
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param string
-	 *            - key to what we're writing
-	 * @param obj
-	 *            - object that we're writing
+     * TODO Description goes here
+     *
+	 * @param playerID player to write to
+	 * @param fieldName key to what we're writing
+	 * @param object An object supported by JSON library
+     * @return Boolean that indicates if write was successful
 	 */
-	private static boolean writePlayer(int status, String string, Object obj) {
-		
+	private static boolean writePlayer(int playerID, String fieldName, Object object) {
 		try {
-			switch (status) {
-			case 0: // append to player 1
-				playerTurnObj[status].put(string, obj);
-				break;
-			case 1: // append to player 2
-				playerTurnObj[status].put(string, obj);
-				break;
-			case 2: // append to both
-				playerTurnObj[0].put(string, obj);
-				playerTurnObj[1].put(string, obj);
-				break;
-			default:
-				return false;
-			}
+			playerTurnObj[playerID].put(fieldName, object);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
@@ -639,67 +544,40 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param resources
-	 *            - given Player's remaining resources
-	 * @return - true if successful send
+     * TODO Description goes here
+     *
+	 * @param playerID Player to send stored data to
 	 */
-	
-	public static boolean send(int status) {
-		
-		switch (status) {
-		// send to player 1
-		case 0: 
-			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
-			playerTurnObj[status] = new JSONObject();
-			break;
-			
-		// send to player 2	
-		case 1: 
-			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
-			playerTurnObj[status] = new JSONObject();
-			break;
-			
-		// append to both
-		case 2: 
-			Server.sendPlayer(playerTurnObj[0], playerToken[0]);
-			playerTurnObj[0] = new JSONObject();
-			Server.sendPlayer(playerTurnObj[1], playerToken[1]);
-			playerTurnObj[1] = new JSONObject();
-			break;
-			
-		default:
-			return false;
-			
-		}
-		
-		return true;
+	public static void send(int playerID) {
+        Server.sendPlayer(playerTurnObj[playerID], game.getPlayerTokenByID(playerID));
+        playerTurnObj[playerID] = new JSONObject();
 	}
 
-	public static boolean hasWon(int PlayerID) {
-		if (PlayerID == 0) {
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID Player that won
+     * @return Boolean that always returns true for some reason TODO See if this can be changed to a void function
+     */
+	public static boolean hasWon(int playerID) {
+        int opponentID = Engine.getOpponentID(playerID);
 
-			writePlayer(0, "responseCode", 9001);
-			writePlayer(1, "responseCode", -1);
-			send(0);
-			send(1);
-			
-			Server.winCondition(0);
-			return true;
-		} else if (PlayerID == 1) {
-			writePlayer(1, "responseCode", 9001);
-            writePlayer(0, "responseCode", -1);
-        	send(0);
-			send(1);
-            Server.winCondition(1);
-			return true;
-		}
-		throw new RuntimeException("There is no winner ????");
+        //TODO Create Constants for codes and strings
+        writePlayer(playerID, "responseCode", 9001);
+        writePlayer(opponentID, "responseCode", -1);
+        send(playerID);
+        send(opponentID);
+
+        Server.winCondition(playerID);
+        return true;
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID Player whose turn is sent to visualizer
+     */
 	public static void printTurnToLog(int playerID) {
 		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
 	}
-
 }

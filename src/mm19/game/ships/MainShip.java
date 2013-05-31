@@ -21,6 +21,7 @@ public class MainShip extends Ship {
     final public static boolean CAN_MOVE = true;
     final public static boolean CAN_BURST_SHOT = true;
     final public static boolean CAN_SONAR = false;
+    final public static String IDENTIFIER = "M";
 
     /**
      * Constructor
@@ -88,5 +89,15 @@ public class MainShip extends Ship {
     @Override
     public boolean canSonar() {
         return CAN_SONAR;
+    }
+
+    /**
+     * Gets the identifier for the current ship
+     *
+     * @return The Ship's identifier
+     */
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
     }
 }

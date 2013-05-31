@@ -7,5 +7,8 @@ package mm19.game;
  * them to any other class
  */
 public class Constants {
-
+    public static final int PLAYER_COUNT = 2;
+    public static final int BOARD_SIZE = 100;
+    public static final int MAX_SHIPS =5;
+    public static final int STARTING_RESOURCES =100;
 }

@@ -11,6 +11,6 @@ public class Timeout extends TimerTask{
 	public void run(){
 		e.timeout();
 		Timer t = new Timer();
-		t.schedule(new Timeout(e), Engine.TIMELIMIT*1000);
+		t.schedule(new Timeout(e), Engine.TIME_LIMIT *1000);
 	}
 }

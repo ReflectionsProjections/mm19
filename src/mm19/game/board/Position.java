@@ -6,6 +6,9 @@ package mm19.game.board;
  * An immutable data object for positions
  */
 public class Position {
+    public static final String HORIZONTAL_IDENTIFIER = "H";
+    public static final String VERTICAL_IDENTIFIER = "V";
+
     // Enum for orientation
     public static enum Orientation {
         HORIZONTAL, VERTICAL
@@ -14,6 +17,7 @@ public class Position {
     final public int x;
     final public int y;
     final public Orientation orientation;
+
 
     /**
      * Constructor for positions.
@@ -26,5 +30,13 @@ public class Position {
         this.x = x;
         this.y = y;
         this.orientation = orientation;
+    }
+
+    public static Orientation getOrientationByIdentifier(String orientationIdentifier) {
+        if(orientationIdentifier.equals(HORIZONTAL_IDENTIFIER)) {
+            return Orientation.HORIZONTAL;
+        } else {
+            return Orientation.VERTICAL;
+        }
     }
 }

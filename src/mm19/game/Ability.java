@@ -34,7 +34,7 @@ public class Ability {
 
     final public static int MOVE_COST_PER_UNIT_LENGTH = 50;
 
-    public enum Type {SHOOT, BURST_SHOT, MOVE, SONAR}
+
 
     /**
      * Resets the abilities of the player and their ships.
@@ -47,41 +47,6 @@ public class Ability {
         for(Ship ship : ships) {
             ship.resetAbility();
         }
-    }
-
-    /**
-     * Determines who has won a tie game
-     * The player with the highest total ship health wins
-     * If tied, the player with the most resources wins
-     * If tied, player 2 wins
-     * 
-     * @param p1 The first player that tied
-     * @param p2 The second player that tied
-     * @return returns the player that has been chosen as victor
-     */
-    public static Player tieBreaker(Player p1, Player p2){
-    	int p1Health = 0;
-    	int p2Health = 0;
-    	Board board = p1.getBoard();
-        ArrayList<Ship> ships = board.getShips();
-        for (Ship ship : ships) {
-            if(ship.canGenerateResources()) {
-                p1Health += ship.getHealth();
-            }
-        }
-        board = p2.getBoard();
-        ships = board.getShips();
-        for (Ship ship : ships) {
-            if(ship.canGenerateResources()) {
-                p2Health += ship.getHealth();
-            }
-        }
-        if(p1Health > p2Health) return p1;
-        if(p2Health > p1Health) return p2;
-        
-        if(p1.getResources() > p2.getResources()) return p1;
-        if(p2.getResources() > p1.getResources()) return p2;
-    	return p2;
     }
 
     /**
@@ -133,7 +98,7 @@ public class Ability {
      * @param targetY         The y coordinate to attack
      * @return Null if the attackingPlayer did not have enough resources, a HitReport otherwise.
      */
-    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws EngineException {
         Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
         if(attackingShip == null) {
         	throw new InputException("Input exception when firing cannon of ship "+shipID+": It is not a valid ship!");
@@ -173,7 +138,7 @@ public class Ability {
      * @param newPosition A position object indicating the new position of the ship
      * @return False if the move could not be made or player did not have enough resources, true otherwise.
      */
-    public static boolean move(Player player, int shipID, Position newPosition) {
+    public static boolean move(Player player, int shipID, Position newPosition) throws EngineException {
         Board board = player.getBoard();
         Ship ship = board.getShip(shipID);
 
@@ -216,7 +181,7 @@ public class Ability {
      * @param targetY         The y coordinate to shoot at
      */
     // @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
-    public static ArrayList<HitReport> burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    public static ArrayList<HitReport> burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws EngineException {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
 
@@ -279,7 +244,7 @@ public class Ability {
      * @return Null if attackingPlayer didn't have enough resources, a list of ship distances otherwise
      */
     public static ArrayList<SonarReport>
-    sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) throws EngineException {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
         if(attackingShip == null) {

@@ -152,4 +152,11 @@ public abstract class Ship {
      * @return True if the Ship can use sonar, false otherwise.
      */
     public abstract boolean canSonar();
+
+    /**
+     * Gets the identifier for the current ship
+     *
+     * @return The Ship's identifier
+     */
+    public abstract String getIdentifier();
 }
