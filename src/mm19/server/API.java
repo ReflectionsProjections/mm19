@@ -191,6 +191,7 @@ public class API {
      * @return TODO: This file needs more javadoc
      */
 	private static ShipData initShip(JSONObject obj) {
+	    
         //TODO Determine why genShip (now moved to ShipData class) and initShip do essentially the same thing...
 		int health;
 		String type;
@@ -257,7 +258,7 @@ public class API {
     /**
      * TODO Description goes here
      *
-	 * @param status enum that tells us to write to player1, player2 or both
+	 * @param status An enum that tells us to write to player1, player2 or both TODO: Status here looks more like an int than a proper enum - Ace
 	 * @param ships ArrayList of current player's shipData
 	 * @return - boolean indicating if write was successful
 	 */
@@ -265,6 +266,7 @@ public class API {
 		JSONArray shipDataJSONArray = new JSONArray();
 
         //TODO Determine why we construct these by reverse iteration
+		//TODO We are also supposed to use for-each loops if possible - so if reverse-iteration is deemed pointless, try to use a for-each loop with a counter
         for (int i = ships.size()-1; i >= 0; i--) {
             JSONObject shipDataJSON = makeShipJSON(ships.get(i));
 			if (shipDataJSON != null) {
@@ -276,9 +278,9 @@ public class API {
 	}
 
 	/**
-     * TODO Description goes here
+     * Converts a ShipData object to JSONObject form
      *
-	 * @param data the data of a given ship
+	 * @param data The data of a given ship
 	 * @return JSONObject containing said data
 	 */
 	private static JSONObject makeShipJSON(ShipData data) {
@@ -299,7 +301,7 @@ public class API {
 	}
 
     /**
-     * TODO Description goes here
+     * TODO Question - is "status" really just a player ID, or am I not reading things right? - Ace
      *
      * @param status TODO: This file needs more javadoc
      * @param message TODO: This file needs more javadoc
@@ -316,25 +318,21 @@ public class API {
 	}
 
     /**
-     * TODO Description goes here
+     * Writes a player's response code to a player's JSONObject(?)
      *
-     * @param playerID TODO: This file needs more javadoc
-     * @return TODO: This file needs more javadoc
+     * @param playerID The player to write to
+     * @return Boolean that indicates if write was successful
      */
 	public static boolean writePlayerResponseCode(int playerID) {
 		try {
 
-            //TODO Rearrange code so there is only a single writePlayer call.
-			if(playerTurnObj[playerID].has("error")) {
-				int length = playerTurnObj[playerID].getJSONArray("error").length();
-				if(length > 0) {
-					return writePlayer(playerID, "responseCode", 400);
-				}
-				return writePlayer(playerID, "responseCode", 200);
-			} else {
+			if(!playerTurnObj[playerID].has("error")) {
 				playerTurnObj[playerID].put("error", new JSONArray());
-				return writePlayer(playerID, "responseCode", 200);
 			}
+			
+			int errorLength = playerTurnObj[playerID].getJSONArray("error").length();
+			return writePlayer(playerID, "responseCode", errorLength > 0 ? 400 : 200);
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -342,10 +340,10 @@ public class API {
 	}
 
     /**
-     * TODO Description goes here
+     * Writes a player's resource count to a player's JSONObject(?)
      *
-     * @param playerID TODO: This file needs more javadoc
-     * @param resources TODO: This file needs more javadoc
+     * @param playerID The player to write to
+     * @param resources The amount of resources the player should have
      * @return Boolean indicating if write is successful
      */
 	public static boolean writePlayerResources(int playerID, int resources) {
@@ -355,8 +353,8 @@ public class API {
 	/**
      * TODO Description goes here
      *
-	 * @param playerID Player to write to
-	 * @param hits array list of current player hit reports
+	 * @param playerID The player to write to
+	 * @param hits An arrayList of the current player's hit reports
 	 * @return Boolean indicating if write was successful
 	 */
 	public static boolean writePlayerHits(int playerID, ArrayList<HitReport> hits) {
@@ -376,8 +374,8 @@ public class API {
 	/**
      * TODO Description goes here
      *
-	 * @param playerID Player to write to
-	 * @param hits array list of current player hit reports
+	 * @param playerID The player to write to
+	 * @param hits An arrayList of current player hit reports
 	 * @return Boolean that indicates if write was successful
 	 */
 	public static boolean writePlayerEnemyHits(int playerID, ArrayList<HitReport> hits) {
@@ -396,10 +394,10 @@ public class API {
 	}
 
 	/**
-     * TODO Description goes here
+     * Converts a HitReport object to JSONObject form
      *
-	 * @param report the data of a given HitReport
-	 * @return JSONObject containing the HitReport's data
+	 * @param report The data of a given HitReport
+	 * @return A JSONObject containing the HitReport's data
 	 */
 	private static JSONObject makeHitJSON(HitReport report) {
         //TODO Move to HitReport class and name it toJSON()
@@ -419,8 +417,8 @@ public class API {
 	/**
      * TODO Description goes here
      *
-	 * @param playerID Player to write to
-	 * @param sonarReports array list of current player sonarReports
+	 * @param playerID The player to write to
+	 * @param sonarReports An arrayList of the current player's sonarReports
 	 * @return Boolean indicating if write was successful
 	 */
 	public static boolean writePlayerPings(int playerID, ArrayList<SonarReport> sonarReports) {
@@ -438,7 +436,7 @@ public class API {
 	}
 
 	/**
-     * TODO Description goes here
+     * TODO Converts a SonarReport object to JSONObject form
      *
 	 * @param sonarReport A SonarReport
 	 * @return JSONObject containing the SonarReport's data
@@ -460,8 +458,8 @@ public class API {
 	/**
      * TODO Description goes here
      *
-	 * @param playerID player to write to
-	 * @param shipActionResults array list of current action results
+	 * @param playerID The player to write to
+	 * @param shipActionResults An arrayList of current action results
 	 * @return Boolean indicating if write was successful
 	 */
 	public static boolean writePlayerResults(int playerID, ArrayList<ShipActionResult> shipActionResults) {
@@ -479,7 +477,7 @@ public class API {
 	}
 
 	/**
-     * TODO Description goes here
+     * TODO Converts a ShipActionResult object to JSONObject form
      *
 	 * @param result A ShipActionResult
 	 * @return JSONObject containing the ShipActionResult's data
@@ -544,7 +542,7 @@ public class API {
 	}
 
 	/**
-     * TODO Description goes here
+     * Send stored data to a player in JSON form
      *
 	 * @param playerID Player to send stored data to
 	 */
@@ -573,7 +571,7 @@ public class API {
 	}
 
     /**
-     * TODO Description goes here
+     * TODO Print
      *
      * @param playerID Player whose turn is sent to visualizer
      */

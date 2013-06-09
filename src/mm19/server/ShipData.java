@@ -58,7 +58,7 @@ public class ShipData {
             }
 
             //TODO: Determine why ID must not be 0.  0 seems like a reasonable value. -Eric
-            if (health != 0 && ID != 0 && type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
+            if (health != 0 && ID != 0 && !type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
                     && yCoord > -1 && yCoord < Constants.BOARD_SIZE && !orientationIdentifier.equals("")) {
 
                 Position.Orientation orientation = Position.getOrientationByIdentifier(orientationIdentifier);
