@@ -57,9 +57,13 @@ public class ShipData {
                 return null;
             }
 
+            boolean coordinatesAreValid = xCoord > -1 && xCoord < Constants.BOARD_SIZE
+                                       && yCoord > -1 && yCoord < Constants.BOARD_SIZE;
+                                       
+            boolean requiredValuesExist = !type.equals("") && !orientationIdentifier.equals("");
+            
             //TODO: Determine why ID must not be 0.  0 seems like a reasonable value. -Eric
-            if (health != 0 && ID != 0 && !type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
-                    && yCoord > -1 && yCoord < Constants.BOARD_SIZE && !orientationIdentifier.equals("")) {
+            if (health != 0  && ID != 0 && coordinatesAreValid && requiredValuesExist) {
 
                 Position.Orientation orientation = Position.getOrientationByIdentifier(orientationIdentifier);
                 return new ShipData(health, ID, type, xCoord, yCoord, orientation);
