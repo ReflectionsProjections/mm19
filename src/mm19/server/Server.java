@@ -1,7 +1,11 @@
 package mm19.server;
 
 /**
- * Standalone MechMania XIX server.
+ * @author mm19
+ * 
+ * MechMania XIX server.
+ * 
+ * TODO Needs more javadoc
  */
 
 import java.io.BufferedReader;
@@ -10,16 +14,20 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mm19.api.API;
+import mm19.api.PlayerTurn;
+import mm19.exceptions.APIException;
 import mm19.game.Constants;
+import mm19.logging.VisualizerLogger;
+
 import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Server {
@@ -27,6 +35,8 @@ public class Server {
 	public static final Logger serverLog = Logger.getLogger(Server.class
 			.getName());
 
+	// API
+	private static API api;
 	// Server constants for now, configurable later
 	public static final int PORT = 6969;
 
@@ -38,7 +48,7 @@ public class Server {
 	private static boolean[] connected;
 	private static int playersConnected;
 
-	private static GameLogger visualizerLog = null;
+	private static VisualizerLogger visualizerLog = null;
 	private static String visualizerLogURL = "log.out";
 
 	// Sockets
@@ -46,10 +56,8 @@ public class Server {
 	private static Socket[] clientSockets;
 
 	// Concurrent stuff
-	private static RequestRunnable[] player;
 	private static ExecutorService threadPool = null;
 	private static boolean starting = false;
-	private static boolean running = false;
 
 	// For communication with the connecting client
 	private static BufferedReader in;
@@ -59,47 +67,57 @@ public class Server {
 	private static String[] playerToken;
 	private static BasicTextEncryptor bte;
 
+	// Interrupts
+	public static final int TURN_TIME_LIMIT = 10000;
+	private static Timer interruptTimer;
+
+	/**
+	 * Starting point for the game.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
-        //TODO I think something should happen with 'success' before it is writen again... -Eric
-		success = API.initAPI();
-		
-		visualizerLog = new GameLogger(Server.visualizerLogURL);
 
 		if (!success) {
-			serverLog.log(Level.SEVERE, "Fatal error: unable to start server. Bailing out.");
+			serverLog.log(Level.SEVERE,
+					"Fatal error: unable to start server. Bailing out.");
 			System.exit(1);
 		}
+
+		visualizerLog = new VisualizerLogger(Server.visualizerLogURL);
 
 		// Run the server until the game ends
 		run();
 
-		// End the server and clean up 
-		 
-		 
+		// End the server and clean up
+
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * Initialize the server
+	 * 
+	 * @return if the server was properly initialized
+	 */
 	private static boolean initServer() {
 
+		interruptTimer = new Timer();
 		clientSockets = new Socket[Constants.PLAYER_COUNT];
-
+		api = API.getAPI();
 		playerToken = new String[Constants.PLAYER_COUNT];
-		for(int i = 0; i < playerToken.length; i++) {
+		for (int i = 0; i < playerToken.length; i++) {
 			playerToken[i] = "";
 		}
-		
+
 		connected = new boolean[Constants.PLAYER_COUNT];
-		for(int i = 0; i < connected.length; i++) {
+		for (int i = 0; i < connected.length; i++) {
 			connected[i] = false;
 		}
 
 		bte = new BasicTextEncryptor();
-
-        //TODO We are calling to string on an array here
-		bte.setPassword((new RandomSaltGenerator().generateSalt(10)).toString());
+		bte.setPassword("mm19");
 
 		// TODO: Set up logging to a file
 		serverLog.setLevel(LOG_LEVEL);
@@ -120,12 +138,19 @@ public class Server {
 		return true;
 	}
 
+	/**
+	 * Run the server, accept incoming clients and spawn worker threads to
+	 * accept further requests from them.
+	 * 
+	 * Starts the game once enough clients have joined.
+	 */
 	private static void run() {
 		int currPlayerID = -1;
 		serverLog.log(Level.INFO, "Starting server run loop");
 		starting = true;
 		Socket clientSocket = null;
-		// Long polling and connecting/authenticating new players as they connect.
+		// Long polling and connecting/authenticating new players as they
+		// connect.
 		while (starting) {
 			try {
 				// Listen for a new connection
@@ -134,14 +159,17 @@ public class Server {
 				// players are already connected
 				currPlayerID = getValidPlayerID();
 				if (currPlayerID == -1) {
-					serverLog.log(Level.WARNING, "The server needs to be restarted");
+					serverLog.log(Level.WARNING,
+							"The server needs to be restarted");
 					continue;
 				}
 
 				serverLog.log(Level.INFO, "Connection received.");
-				serverLog.log(Level.INFO, "Waiting on player for new player data.");
+				serverLog.log(Level.INFO,
+						"Waiting on player for new player data.");
 
-				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				in = new BufferedReader(new InputStreamReader(
+						clientSocket.getInputStream()));
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 
 				// Blocks until it gets a response from the client, hopefully a
@@ -150,91 +178,53 @@ public class Server {
 
 				serverLog.log(Level.INFO, "Received player info");
 
+				// We can think of something more interesting here, but security
+				// isn't the biggest issue at the moment.
+				String token = "player" + playersConnected;
+
 				try {
-					// Check to see if we are sent valid data.
-					JSONObject obj = new JSONObject(s);
-					if (obj.has("playerName")) {
-						// Create the player token
-						String name = obj.getString("playerName");
+					api.addPlayer(s, encrypt(token));
 
-                        //TODO We are calling toString on an array here
-						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
-
-						clientSockets[currPlayerID] = clientSocket;
-						playerToken[currPlayerID] = name;
-						connected[currPlayerID] = true;
-						boolean successfullyAdded = API.newData(obj,
-								encrypt(name));
-						if (successfullyAdded) {
-
-							serverLog.log(Level.INFO,
-									"Successfully initialized player!");
-						} else {
-							serverLog
-									.log(Level.INFO,
-											"Couldn't initialize ships for player, dropping connection");
-							disconnectPlayer(name);
-							continue;
-						}
-					}
-				} catch (JSONException e) {
-					serverLog
-							.log(Level.WARNING,
-									"Player didn't have playerName, couldn't authenticate");
 					serverLog.log(Level.INFO,
-							"Notifying and Disconnecting player");
+							"Successfully initialized player!");
+					clientSockets[currPlayerID] = clientSocket;
+					playerToken[currPlayerID] = token;
+					connected[currPlayerID] = true;
 
-					JSONObject ret = new JSONObject();
+					serverLog.log(Level.INFO, "Players connected: "
+							+ ++playersConnected);
 
-					try {
-						ret.put("responseCode", 400);
-						ret.put("playerToken", playerToken[currPlayerID]);
-						ret.put("playerName", "");
-						ret.put("resources", 0);
-						ret.put("ships", new JSONArray());
-						ret.put("shipActionResults", new JSONArray());
-						ret.put("hitReport", new JSONArray());
-						ret.put("pingReport", new JSONArray());
-						ret.append(
-								"error",
-								"You need to include \"playerName\" with your team name so we can authenticate you.");
+					RequestRunnable task = new RequestRunnable(clientSocket,
+							encrypt(playerToken[currPlayerID]), currPlayerID);
+					threadPool.execute(task);
 
-						out.println(ret.toString());
-					} catch (JSONException e1) {
-						e1.printStackTrace();
+					if (api.getStarted()) {
+						startGame();
 					}
 
+				} catch (APIException e) {
+					serverLog
+							.log(Level.INFO,
+									"Couldn't initialize ships for player, dropping connection");
+					PlayerTurn turn = new PlayerTurn();
+					turn.addError(e.getMessage());
+					out.println(turn.toJSON());
 					out.flush();
-					disconnectPlayer(playerToken[currPlayerID]);
-					// Drop the client because he had bad data.
 					continue;
 				}
-
-				// Making sure we don't connect more than the max number of
-				// players.
-				serverLog.log(Level.INFO, "Players connected: "
-						+ ++playersConnected);
-
 			} catch (IOException e) {
 				serverLog.log(Level.SEVERE, "Unexpected error accepting "
 						+ "client connection.", e);
-			}
-
-			// Create a new task for the incoming connection and put it in the
-			// thread pool
-			if (currPlayerID != -1) {
-				RequestRunnable task = new RequestRunnable(clientSocket,
-						playerToken[currPlayerID], currPlayerID);
-				threadPool.execute(task);
-			}
-			
-			if(playersConnected == 2) {
-				API.notifyTurn(0);
 			}
 		}
 
 	}
 
+	/**
+	 * Get valid playerID for the connecting client
+	 * 
+	 * @return A valid player ID, -1 if no more players can join.
+	 */
 	private static int getValidPlayerID() {
 		if (!connected[0])
 			return 0;
@@ -244,47 +234,19 @@ public class Server {
 		return -1;
 	}
 
-	public static int disconnectPlayer(String token) {
-		if (encrypt(playerToken[0]).compareTo(token) == 0) {
-			connected[0] = false;
-
-			try {
-				clientSockets[0].close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			clientSockets[0] = null;
-			playerToken[0] = "";
-			--playersConnected;
-			return 0;
-		} else if (encrypt(playerToken[1]).compareTo(token) == 0) {
-			connected[1] = false;
-
-			try {
-				clientSockets[1].close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			clientSockets[1] = null;
-			playerToken[1] = "";
-			--playersConnected;
-			return 1;
-		}
-
-		return -1;
-	}
-
-	// Returns 1 if player 1 is authenticated, returns 2 if player 2 is
-	// authenticated, returns -1 if neither.
+	/**
+	 * Authenticates a player by returning the player ID associated with it
+	 * 
+	 * @param token
+	 *            The token to be authenticated
+	 * @return The player ID, -1 if authentication failed
+	 */
 	private static int authenticate(String token) {
-
 		if (connected[0]) {
 			if (bte.decrypt(token).equals(playerToken[0])) {
 				return 0;
 			}
-		} 
+		}
 		if (connected[1]) {
 			if (bte.decrypt(token).equals(playerToken[1])) {
 				return 1;
@@ -293,13 +255,42 @@ public class Server {
 		return -1;
 	}
 
+	/**
+	 * Starts the game once enough players have connected
+	 */
+	private static void startGame() {
+		PlayerTurn turn = api.getPlayerTurn(0);
+		turn.setNotify();
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[0]));
+		turn.resetTurn();
+
+		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
+		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+	}
+
+	/**
+	 * Encrypts the string, used for encrypting tokens
+	 * 
+	 * @param s
+	 *            The string to be encrypted
+	 * @return The encrypted string
+	 */
 	private static String encrypt(String s) {
 		return bte.encrypt(s);
 	}
 
-	public static synchronized void sendPlayer(JSONObject player1, String authP1) {
+	/**
+	 * Send a JSON object to a client, which is determined by authenticating the
+	 * token
+	 * 
+	 * @param json
+	 *            The JSON object to be sent
+	 * @param token
+	 *            The token to be authenticated
+	 */
+	public static synchronized void sendToPlayer(JSONObject json, String token) {
 		// Authenticate the player.
-		int playerID = authenticate(authP1);
+		int playerID = authenticate(token);
 
 		if (playerID == -1) {
 			serverLog
@@ -311,7 +302,7 @@ public class Server {
 		try {
 			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
 					true);
-			out.println(player1);
+			out.println(json);
 			out.flush();
 
 		} catch (IOException e) {
@@ -321,20 +312,131 @@ public class Server {
 		}
 	}
 
-	public static void winCondition(int player) {
+	/**
+	 * Called from RequestRunnable when a client submits a turn, sends to the
+	 * API for further handling and reacts accordingly.
+	 * 
+	 * @param obj
+	 *            The turn to submit
+	 * @param token
+	 *            The token to authenticate
+	 */
+	public static synchronized void submitTurn(JSONObject obj, String token) {
+		int playerID = authenticate(token);
+		if (playerID == -1) {
+			serverLog.log(Level.WARNING,
+					"Player not authenticated when trying to send to API");
+			return;
+		}
+
+		// Rejecting the player's request because it's not his turn.
+		if (playerID != api.getCurrPlayerID()) {
+			PlayerTurn turn = api.getPlayerTurn(playerID);
+			turn.addError("It is not your turn!");
+			turn.setError();
+			sendToPlayer(turn.toJSON(), token);
+			turn.resetTurn();
+			return;
+		}
+
+		interruptTimer.cancel();
+		interruptTimer.purge();
+		interruptTimer = new Timer();
+
+		int opponentID = api.getCurrOpponentID();
+
+		// Once you call sendToAPI, "playerID" and "opponentID" are switched,
+		// since the turn switches, which is why playerID and opponentID are
+		// preserved beforehand.
+		sendToAPI(obj, playerID);
+
+		PlayerTurn playerTurn = api.getPlayerTurn(playerID);
+		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+
+		// Adding turn to visualizer log
+		visualizerLog.addTurn(playerTurn.toJSON());
+
+		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
+		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
+
+		playerTurn.resetTurn();
+		opponentTurn.resetTurn();
+
+		if (api.getWinner()) {
+			shutdown();
+			return;
+		}
+		// Set the new player to interrupt.
+		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
+		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+	}
+
+	/**
+	 * Sends information (a turn) to the API for processing
+	 * 
+	 * @param obj
+	 *            The turn to be processed
+	 * @param playerID
+	 *            The player ID of the turn
+	 */
+	private static void sendToAPI(JSONObject obj, int playerID) {
 		try {
-			Thread.sleep(5);
-		} catch (InterruptedException e) {
+			api.processTurn(obj, playerID);
+		} catch (APIException e) {
+			api.getPlayerTurn(playerID).addError(e.getMessage());
+		}
+	}
+
+	/**
+	 * Called from a ServerInterruptTask when the timer goes off, interrupts a
+	 * current player and sends him a message for taking too long.
+	 * 
+	 * @param playerID
+	 *            The player to interrupt
+	 */
+	public static synchronized void interruptPlayer(int playerID) {
+		int opponentID = api.getCurrOpponentID();
+
+		// This will switch the player/opponent IDs
+		api.notifyInterrupt();
+
+		PlayerTurn turn = api.getPlayerTurn(playerID);
+		turn.setInterrupt();
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[playerID]));
+		turn.resetTurn();
+
+		turn = api.getPlayerTurn(opponentID);
+		turn.setNotify();
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[opponentID]));
+		turn.resetTurn();
+
+		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
+		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+	}
+
+	/**
+	 * Shuts down the server and writes the game to the log file
+	 */
+	private static void shutdown() {
+		visualizerLog.writeToFile();
+		visualizerLog.close();
+
+		starting = false;
+
+		try {
+			socket.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.exit(player);
 	}
 
-	public static synchronized void sendAPI(JSONObject obj) {
-		API.decodeTurn(obj);
-	}
-
-	public static void printToVisualizerLog(String string) {
-		visualizerLog.log(string);
+	/**
+	 * Adds a turn to the visualizer log
+	 * 
+	 * @param turn
+	 *            The turn to add
+	 */
+	public static void addTurnToVisualizerLog(JSONObject turn) {
+		visualizerLog.addTurn(turn);
 	}
 }

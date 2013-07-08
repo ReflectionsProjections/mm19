@@ -2,6 +2,8 @@ package mm19.game;
 
 import java.util.ArrayList;
 
+import mm19.api.HitReport;
+import mm19.api.SonarReport;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;

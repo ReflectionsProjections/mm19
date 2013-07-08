@@ -1,12 +1,11 @@
 package mm19.tests;
-import mm19.TestUtilities;
+import mm19.api.HitReport;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
 import mm19.game.Ability;
 import mm19.game.Constants;
 import mm19.game.Engine;
-import mm19.game.HitReport;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;

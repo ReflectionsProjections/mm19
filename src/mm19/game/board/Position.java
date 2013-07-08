@@ -39,4 +39,12 @@ public class Position {
             return Orientation.VERTICAL;
         }
     }
+    
+    public static String getIdentifierByOrientation(Orientation orientation) {
+    	if(orientation == Position.Orientation.HORIZONTAL) {
+    		return HORIZONTAL_IDENTIFIER;
+    	} else {
+    		return VERTICAL_IDENTIFIER;
+    	}
+    }
 }

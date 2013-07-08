@@ -2,7 +2,7 @@ package mm19;
 
 /**
  * @author mm19
- *
+ * 
  * Coding Conventions for MechMania 19
  */
 public class CodingConventions {
@@ -240,7 +240,8 @@ public class CodingConventions {
     //###                                                              ###
     //####################################################################
     //####################################################################
-
+    
+    @SuppressWarnings("unused")
     private class Ship {
         final static public int DEFAULT_HEALTH = 30;
         public int health;

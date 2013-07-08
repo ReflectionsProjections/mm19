@@ -1,11 +1,12 @@
-package mm19.server;
+package mm19.logging;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import mm19.game.board.Board;
+import mm19.game.Constants;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,18 +14,20 @@ import org.json.JSONObject;
 // makes a new logger to write to a file if the url is not valid then
 // it will become a dummy logger
 //
-public class GameLogger {
+public class VisualizerLogger {
 	FileWriter logFile;
+	JSONArray turns;
+	JSONObject boardConfiguration;
 	BufferedWriter bw;
-	public GameLogger(String LogUrl) {
+	public VisualizerLogger(String LogUrl) {
 		try {
 			this.logFile = new FileWriter(LogUrl);
 			bw = new BufferedWriter(logFile);
-			
-			// Logging the initial line for the visualizer
-			JSONObject obj = new JSONObject();
-			obj.put("size",Board.DEFAULT_WIDTH );
-			log(obj.toString());
+			turns = new JSONArray();
+			// Logging the initial board configurations for the visualizer
+			boardConfiguration = new JSONObject();
+			boardConfiguration.put("width", Constants.BOARD_SIZE);
+			boardConfiguration.put("height", Constants.BOARD_SIZE);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out
@@ -39,34 +42,41 @@ public class GameLogger {
 		}
 
 	}
-
+	
+	public void addTurn(JSONObject turn) {
+		turns.put(turn);
+	}
+	
 	// print string to file
-	public void log(String outPut) {
+	public void writeToFile() {
 		if (logFile == null) {
 			return;
 		}
 		try {
-			bw.write(outPut);
-			bw.write("\n");
+			JSONObject json = new JSONObject();
+			json.put("boardConfiguration", boardConfiguration);
+			json.put("turns", turns);
+			bw.write(json.toString());
 			bw.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new RuntimeException(
-					"WTF the file is open but it failed to write");
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
 
 	}
-	public void close()
-	{
+	
+	public void close() {
 		try {
 			bw.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
 	 protected void finalize() {
 	        close();
+	        // TODO What?
 	        System.out.println("error you forgot to close the logfile handler");
-	    }
+	 }
 }
