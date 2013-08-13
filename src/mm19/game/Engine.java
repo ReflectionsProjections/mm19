@@ -1,6 +1,7 @@
 package mm19.game;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import mm19.api.API;
 import mm19.api.Action;
@@ -19,6 +20,7 @@ import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
+import mm19.server.Server;
 
 /**
  * @author mm19
@@ -65,15 +67,13 @@ public class Engine {
 	public static Player breakTie(Player p1, Player p2) {
 		int p1Health = 0;
 		int p2Health = 0;
-		Board board = p1.getBoard();
-		ArrayList<Ship> ships = board.getShips();
+		ArrayList<Ship> ships = p1.getBoard().getShips();
 		for (Ship ship : ships) {
 			if (ship.canGenerateResources()) {
 				p1Health += ship.getHealth();
 			}
 		}
-		board = p2.getBoard();
-		ships = board.getShips();
+		ships = p2.getBoard().getShips();
 		for (Ship ship : ships) {
 			if (ship.canGenerateResources()) {
 				p2Health += ship.getHealth();
@@ -314,17 +314,17 @@ public class Engine {
 			playerTurn.setWon();
 			opponentPlayerTurn.setLost();
 			
+			Server.serverLog.log(Level.INFO, "Player " + playerTurn.getPlayer().getName() + " has won! (Opponent killed)");
 			winner = true;
 		}
-
-		if (turn > TURN_LIMIT) {
+		else if (turn > TURN_LIMIT) { // I changed this to an else for now so both players can't be defeated. Feel free to tweak in the future. - Ace
 			player = breakTie(player, opponent);
 			opponent = players[(player.getPlayerID() + 1)
-					% Constants.PLAYER_COUNT];
+					% Constants.PLAYER_COUNT]; // What does this bit of logic do? (Is this server supposed to run multiple 2-player games simultaneously? Otherwise, this makes no sense to me.) - Ace
 
 			playerTurn.setWon();
+			Server.serverLog.log(Level.INFO, "Player " + playerTurn.getPlayer().getName() + " has won! (Won a tie breaker)");
 			opponentPlayerTurn.setLost();
-			
 			winner = true;
 		}
 

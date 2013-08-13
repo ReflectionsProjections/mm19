@@ -17,8 +17,10 @@ import java.net.Socket;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import mm19.api.API;
 import mm19.api.PlayerTurn;
@@ -77,7 +79,7 @@ public class Server {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
+	    
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
 
@@ -119,8 +121,29 @@ public class Server {
 		bte = new BasicTextEncryptor();
 		bte.setPassword("mm19");
 
-		// TODO: Set up logging to a file
-		serverLog.setLevel(LOG_LEVEL);
+		// Set up to-file logging
+        FileHandler fileLogHandler;
+        try
+        {
+            // TRUE -> console is stopped and log is pointed to file; FALSE -> nothing changes
+            boolean logToFile = false;
+            if(logToFile)
+            {
+                fileLogHandler = new FileHandler(LOG_PATH);
+                fileLogHandler.setFormatter(new SimpleFormatter());
+                
+                System.out.println("Console logging going down; File logging going up at location " + LOG_PATH);
+                // Stop to-console logging
+                serverLog.setUseParentHandlers(false);
+                // Start to-file logging
+                serverLog.addHandler(fileLogHandler);
+            }
+        }
+        catch(IOException e)
+        {
+            serverLog.log(Level.SEVERE, "Fatal error: Unable to start server-to-file logging. Bailing out.");
+            System.exit(1); // Does this exit code need to be changed?
+        }
 
 		// Set up the socket
 		try {

@@ -11,8 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 //
-// makes a new logger to write to a file if the url is not valid then
-// it will become a dummy logger
+// Makes a new logger to write to a file
+//  If the URL is invalid, it will become a dummy logger
 //
 public class VisualizerLogger {
 	FileWriter logFile;
@@ -24,10 +24,12 @@ public class VisualizerLogger {
 			this.logFile = new FileWriter(LogUrl);
 			bw = new BufferedWriter(logFile);
 			turns = new JSONArray();
+			
 			// Logging the initial board configurations for the visualizer
 			boardConfiguration = new JSONObject();
 			boardConfiguration.put("width", Constants.BOARD_SIZE);
 			boardConfiguration.put("height", Constants.BOARD_SIZE);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out

@@ -66,6 +66,7 @@ public class API {
 		try {
 			JSONObject json = new JSONObject(s);
 			ShipData mainShip = null;
+			
 			// Get the main ship from JSON
 			JSONObject mainShipJSON = json.getJSONObject("mainShip");
 			mainShipJSON.put("type", MainShip.IDENTIFIER);
