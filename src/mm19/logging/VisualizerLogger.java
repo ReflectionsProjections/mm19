@@ -27,9 +27,7 @@ public class VisualizerLogger {
 			
 			// Logging the initial board configurations for the visualizer
 			boardConfiguration = new JSONObject();
-			boardConfiguration.put("width", Constants.BOARD_SIZE);
-			boardConfiguration.put("height", Constants.BOARD_SIZE);
-			
+			boardConfiguration.put("size", Constants.BOARD_SIZE);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out
@@ -55,11 +53,12 @@ public class VisualizerLogger {
 			return;
 		}
 		try {
-			JSONObject json = new JSONObject();
-			json.put("boardConfiguration", boardConfiguration);
-			json.put("turns", turns);
-			bw.write(json.toString());
-			bw.flush();
+			bw.write(boardConfiguration.toString() + '\r' + '\n');
+			int length = turns.length();
+			for(int i = 0; i < length; i++) {
+				bw.write(turns.get(i).toString() + '\r' + '\n');
+				bw.flush();
+			}	
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {

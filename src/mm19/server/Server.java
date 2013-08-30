@@ -28,7 +28,6 @@ import mm19.exceptions.APIException;
 import mm19.game.Constants;
 import mm19.logging.VisualizerLogger;
 
-import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.json.JSONObject;
 
