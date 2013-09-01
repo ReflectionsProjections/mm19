@@ -27,23 +27,23 @@ public class TestUtilities {
         //player SHIP SETUP
         //#1 MainShip
         ships.add(new MainShip());
-        positions.add(new Position(MainShip.LENGTH-1, 0, Position.Orientation.HORIZONTAL));
+        positions.add(new Position(0, 0, Position.Orientation.HORIZONTAL));
 
         //#2 DestroyerShip
         ships.add(new DestroyerShip());
-        positions.add(new Position(DestroyerShip.LENGTH-1, 1, Position.Orientation.HORIZONTAL));
+        positions.add(new Position(0, 1, Position.Orientation.HORIZONTAL));
 
         //#3 DestroyerShip
         ships.add(new DestroyerShip());
-        positions.add(new Position(DestroyerShip.LENGTH-1, 2, Position.Orientation.HORIZONTAL));
+        positions.add(new Position(0, 2, Position.Orientation.HORIZONTAL));
 
         //#4 PilotShip
         ships.add(new PilotShip());
-        positions.add(new Position(PilotShip.LENGTH-1, 3, Position.Orientation.HORIZONTAL));
+        positions.add(new Position(0, 3, Position.Orientation.HORIZONTAL));
 
         //#5 PilotShip
         ships.add(new PilotShip());
-        positions.add(new Position(PilotShip.LENGTH-1, 4, Position.Orientation.HORIZONTAL));
+        positions.add(new Position(0, 4, Position.Orientation.HORIZONTAL));
 
         return initializePlayer(ships, positions);
     }
