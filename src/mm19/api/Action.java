@@ -116,4 +116,16 @@ public class Action {
             return "";
         }
     }
+    
+    public JSONObject toJSON() throws JSONException {
+        String actionResult;
+        
+        JSONObject json = new JSONObject();
+        json.put("ID", shipID);
+        json.put("actionID", actionID);
+        json.put("actionX", actionXVar);
+        json.put("actionY", actionYVar);
+        json.put("actionExtra", actionExtraVar);
+        return json;
+    }
 }

@@ -41,6 +41,7 @@ public class PlayerTurn {
 
 	private ArrayList<String> errors;
 	private ArrayList<ShipActionResult> shipActionResults;
+	private ArrayList<Action> sucessfulActions;
 	private ArrayList<HitReport> hitReport;
 	private ArrayList<SonarReport> sonarReport;
 
@@ -97,6 +98,7 @@ public class PlayerTurn {
 	public void resetTurn() {
 		errors = new ArrayList<String>();
 		shipActionResults = new ArrayList<ShipActionResult>();
+		sucessfulActions = new ArrayList<Action>();
 		hitReport = new ArrayList<HitReport>();
 		sonarReport = new ArrayList<SonarReport>();
 
@@ -147,7 +149,15 @@ public class PlayerTurn {
 	public void addSonarReport(SonarReport sr) {
 		sonarReport.add(sr);
 	}
-
+	/**
+     * Add action to PlayerTurn
+     * 
+     * @param a
+     *            The action to add
+     */
+    public void addAction(Action a) {
+        sucessfulActions.add(a);
+    }
 	/**
 	 * @return the player
 	 */
@@ -244,7 +254,38 @@ public class PlayerTurn {
 		}
 		return json;
 	}
+	
+	public JSONObject getLoggingJSON() throws JSONException{
+	    ArrayList<Ship> ships = player.getBoard().getShips();
+        Board board = player.getBoard();
+	    JSONObject json = new JSONObject();
+	    JSONArray shipDataArray = new JSONArray();
+        JSONArray actionArray = new JSONArray();
 
+        // Form the ship data array
+        for (Ship ship : ships) {
+            Position pos = board.getShipPosition(ship.getID());
+            ShipData tempShipData = new ShipData(ship.getHealth(),
+                    ship.getID(), ship.getIdentifier(), pos.x, pos.y,
+                    pos.orientation);
+
+            try {
+                shipDataArray.put(tempShipData.toJSON());
+            } catch (ShipDataException e) {
+                throw new JSONException(e.getMessage());
+            }
+        }
+        
+        for (Action action : sucessfulActions) {
+            actionArray.put(action.toJSON());
+        }
+        json.put("ships", shipDataArray);
+        json.put("actions", actionArray);
+	    
+	    
+	    
+	    return null;
+	}
 	/**
 	 * Generates an invalid initial data JSON object. This only gets called if
 	 * the user calls the default constructor and doesn't call setPlayer before
@@ -329,6 +370,8 @@ public class PlayerTurn {
 		return writeJSONBody(json);
 	}
 
+	
+	
 	/**
 	 * Writes the generic JSON body for most server responses
 	 * @param json

@@ -81,12 +81,12 @@ public class Engine {
 		}
 		if (p1Health > p2Health)
 			return p1;
-		if (p2Health > p1Health)
+		else if (p2Health > p1Health)
 			return p2;
 
 		if (p1.getResources() > p2.getResources())
 			return p1;
-		if (p2.getResources() > p1.getResources())
+		else if (p2.getResources() > p1.getResources())
 			return p2;
 
 		return p2;
@@ -246,6 +246,7 @@ public class Engine {
 					playerTurn.addShipActionResult(new ShipActionResult(
 							action.shipID,
 							ShipActionResult.ActionResult.SUCCESS));
+					playerTurn.addAction(action);
 					playerTurn.addHitReport(hitResponse);
 					opponentPlayerTurn.addHitReport(hitResponse);
 				} catch (EngineException e) {
@@ -259,6 +260,7 @@ public class Engine {
 					playerTurn.addShipActionResult(new ShipActionResult(
 							action.shipID,
 							ShipActionResult.ActionResult.SUCCESS));
+					playerTurn.addAction(action);
 					for (HitReport hitReport : burstResponse) {
 						if (hitReport.shotSuccessful) {
 							opponentPlayerTurn.addHitReport(hitReport);
@@ -275,6 +277,7 @@ public class Engine {
 					playerTurn.addShipActionResult(new ShipActionResult(
 							action.shipID,
 							ShipActionResult.ActionResult.SUCCESS));
+					playerTurn.addAction(action);
 
 					for (SonarReport report : sonarResponse) {
 						playerTurn.addSonarReport(report);
@@ -299,12 +302,13 @@ public class Engine {
 					playerTurn.addShipActionResult(new ShipActionResult(
 							action.shipID,
 							ShipActionResult.ActionResult.SUCCESS));
+					playerTurn.addAction(action);
 				} catch (EngineException e) {
 					handleEngineException(e, playerID, action);
 				}
 			}
 		}
-
+		
 		Ability.resetAbilityStates(player);
 
 		// TODO We can discuss if this is the right logic to end the game or
