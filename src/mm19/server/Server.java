@@ -384,7 +384,7 @@ public class Server {
 		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
 
 		// Adding turn to visualizer log
-		visualizerLog.addTurn(playerTurn.toJSON());
+		visualizerLog.addTurn(playerTurn.toJSON());//toLoggingJSON());//
 
 		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
 		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
