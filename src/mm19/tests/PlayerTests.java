@@ -1,18 +1,14 @@
 package mm19.tests;
 
-import static org.junit.Assert.*;
-
-import mm19.game.board.Board;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
-import mm19.game.ships.PilotShip;
-import mm19.game.ships.Ship;
 
 import org.junit.Test;
-
-import java.util.ArrayList;
 
 public class PlayerTests {
 	

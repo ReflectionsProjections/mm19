@@ -13,7 +13,6 @@ import mm19.api.SonarReport;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
-import mm19.game.board.Board;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
@@ -310,10 +309,7 @@ public class Engine {
 		}
 		
 		Ability.resetAbilityStates(player);
-
-		// TODO We can discuss if this is the right logic to end the game or
-		// not. I don't think it's possible for both players to get defeated on
-		// the same turn. -Alex
+		
 		if (!opponent.isAlive()) {
 			playerTurn.setWon();
 			opponentPlayerTurn.setLost();

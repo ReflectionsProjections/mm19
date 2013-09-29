@@ -17,58 +17,53 @@ import org.json.JSONObject;
 
 public class RequestRunnable implements Runnable {
 
-    protected Socket clientSocket = null;
-    protected String playerToken;
-    protected int playerID;
+	protected Socket clientSocket = null;
+	protected String playerToken;
+	protected int playerID;
 
-    protected BufferedReader in = null;
+	protected BufferedReader in = null;
 
-    public RequestRunnable(Socket clientSocket, String token, int pID) {
-        this.clientSocket = clientSocket;
-        playerToken = token;
-        playerID = pID;
-    }
+	public RequestRunnable(Socket clientSocket, String token, int pID) {
+		this.clientSocket = clientSocket;
+		playerToken = token;
+		playerID = pID;
+	}
 
-    @Override
-    public void run() {
-        Boolean running = true;
-        while(running) {
-            try {
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	@Override
+	public void run() {
+		Boolean running = true;
+		try {
+			while (running) {
 
-                String msg = in.readLine();
-                System.out.println("Recieved turn");
-                if(msg == null) {
-                    running = false;
-                    in.close();
-                    break;
-                }
-                JSONObject obj = new JSONObject(msg);
-                Server.submitTurn(obj, playerToken);
+				in = new BufferedReader(new InputStreamReader(
+						clientSocket.getInputStream()));
 
-            }
-            catch(IOException e) {
-            	Server.serverLog.log(Level.INFO, "Player dropped, restart server.");
-                e.printStackTrace();
-                break;
+				String msg = in.readLine();
+				System.out.println("Recieved turn");
+				if (msg == null) {
+					running = false;
+					in.close();
+					break;
+				}
+				JSONObject obj = new JSONObject(msg);
+				Server.submitTurn(obj, playerToken);
 
-            }
-            catch(JSONException e) {
-                e.printStackTrace();
-            }
-        }
+			}
 
-        Server.serverLog.log(Level.INFO, "Player dropped, restart server.");
+			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped.");
+		} catch (IOException e) {
+			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped. (SocketException)");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		if (in != null) {
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
-        if(in != null) {
-            try {
-                in.close();
-            }
-            catch(IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
+	}
 
 }
