@@ -38,7 +38,7 @@ var model = {
             resources : turn.resources,
             ships : util.map_array(convert_ship, turn.ships),
             actions : []
-        }
+        };
 	}
 };
 

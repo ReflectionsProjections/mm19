@@ -78,7 +78,13 @@ var controller = {
             }
         }
 
-        document.getElementById("turn_number").value = "" + this.frame;
+        if ("winner" in turn) {
+            alert(turn.winner + " Wins!");
+            this.buttons.pause();
+            return;
+        }
+
+        view.set_turn(this.frame);
 
         // apply turn to game state
         model.perform_turn(turn);
@@ -168,7 +174,7 @@ var controller = {
 
         restart : function() {
             controller.frame = 0;
-            document.getElementById("turn_number").value = 0;
+            view.set_turn(0);
 
             var setup = util.map_array(json_parse, controller.log.slice(0, 3));
             model.new_game_state(setup);
