@@ -207,6 +207,35 @@ public class PlayerTurn {
 		lost = true;
 	}
 	
+	/**
+     * checks whether the given player has won: 
+     *  if it returns false that does not mean the player has lost, it just means they have not lost yet
+     */
+	public boolean hasWon(){
+	    return won;
+	}
+	
+	/**
+     * checks whether the given player has lost: 
+     *  if it returns false that does not mean the player has won, it just means they have not won yet
+     */
+	public boolean hasLost(){
+	    return lost;
+	}
+	
+	/**
+	 * Returns a Json containing "winner", playerName
+	 * @throws JSONException 
+	 */
+	public JSONObject winnerJSON(){
+        try {
+            JSONObject json = new JSONObject();
+            json.put("winner", player.getName());
+            return json;
+        } catch (JSONException e) {
+            return null;
+        }
+	}
 
 	/**
 	 * Get the PlayerTurn in a format that the visualizer can read it
@@ -215,7 +244,7 @@ public class PlayerTurn {
 	 */
 	public JSONObject toLoggingJSON() {
 		try {
-			return writeJSONBody(new JSONObject());
+			return getLoggingJSON();//writeJSONBody(new JSONObject());
 		} catch (JSONException e) {
 			return null;
 		}
@@ -255,37 +284,7 @@ public class PlayerTurn {
 		return json;
 	}
 	
-	public JSONObject getLoggingJSON() throws JSONException{
-	    ArrayList<Ship> ships = player.getBoard().getShips();
-        Board board = player.getBoard();
-	    JSONObject json = new JSONObject();
-	    JSONArray shipDataArray = new JSONArray();
-        JSONArray actionArray = new JSONArray();
-
-        // Form the ship data array
-        for (Ship ship : ships) {
-            Position pos = board.getShipPosition(ship.getID());
-            ShipData tempShipData = new ShipData(ship.getHealth(),
-                    ship.getID(), ship.getIdentifier(), pos.x, pos.y,
-                    pos.orientation);
-
-            try {
-                shipDataArray.put(tempShipData.toJSON());
-            } catch (ShipDataException e) {
-                throw new JSONException(e.getMessage());
-            }
-        }
-        
-        for (Action action : sucessfulActions) {
-            actionArray.put(action.toJSON());
-        }
-        json.put("ships", shipDataArray);
-        json.put("actions", actionArray);
-	    
-	    
-	    
-	    return null;
-	}
+	
 	/**
 	 * Generates an invalid initial data JSON object. This only gets called if
 	 * the user calls the default constructor and doesn't call setPlayer before
@@ -435,4 +434,42 @@ public class PlayerTurn {
 
 		return json;
 	}
+	
+	public JSONObject getLoggingJSON() throws JSONException{
+        ArrayList<Ship> ships = player.getBoard().getShips();
+        Board board = player.getBoard();
+        JSONObject json = new JSONObject();
+        JSONArray shipDataArray = new JSONArray();
+        JSONArray actionArray = new JSONArray();
+        
+        if (won) {
+            json.put("responseCode", WIN_RESPONSE_CODE);
+        } else if (lost) {
+            json.put("responseCode", LOSS_RESPONSE_CODE);
+        } else json.put("responseCode", SUCCESS_RESPONSE_CODE);
+
+        // Form the ship data array
+        for (Ship ship : ships) {
+            Position pos = board.getShipPosition(ship.getID());
+            ShipData tempShipData = new ShipData(ship.getHealth(),
+                    ship.getID(), ship.getIdentifier(), pos.x, pos.y,
+                    pos.orientation);
+
+            try {
+                shipDataArray.put(tempShipData.toJSON());
+            } catch (ShipDataException e) {
+                throw new JSONException(e.getMessage());
+            }
+        }
+        
+        for (Action action : sucessfulActions) {
+            actionArray.put(action.toJSON());
+        }
+        json.put("playerName", player.getName());
+        json.put("resources", player.getResources());
+        json.put("ships", shipDataArray);
+        json.put("actions", actionArray);
+        
+        return json;
+    }
 }

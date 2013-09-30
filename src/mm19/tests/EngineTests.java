@@ -1,23 +1,23 @@
 package mm19.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+
 import java.util.ArrayList;
 
 import mm19.api.API;
-import mm19.api.Action;
 import mm19.api.ShipData;
+import mm19.game.Engine;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import mm19.game.Engine;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 // Note: please run all tests individually, due to the nondeterministic 
 // nature of junit, some may fail to to junit presets, not failure in the 

@@ -80,7 +80,8 @@ public class API {
 			// Get the array of other ships from JSON and verify it's the right
 			// length.
 			JSONArray shipsJSONArray = json.getJSONArray("ships");
-			if (shipsJSONArray.length() != Constants.MAX_SHIPS - 1) {
+			if (shipsJSONArray.length() > Constants.MAX_SHIPS - 1)//(shipsJSONArray.length() != Constants.MAX_SHIPS - 1) 
+			    {
 				throw new APIException("You are trying to place "
 						+ (shipsJSONArray.length() + 1)
 						+ " ships but the game requires " + Constants.MAX_SHIPS);

@@ -1,13 +1,12 @@
 package mm19.tests;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ShipTests {

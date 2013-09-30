@@ -2,6 +2,9 @@ package mm19.api;
 
 import mm19.exceptions.ShipDataException;
 import mm19.game.board.Position;
+import mm19.game.ships.DestroyerShip;
+import mm19.game.ships.MainShip;
+import mm19.game.ships.PilotShip;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +41,6 @@ public class ShipData {
 			// a JSONObject, the Engine logic will have the data within the game
 			health = json.optInt("health");
 			ID = json.optInt("ID");
-
 			type = json.getString("type");
 			xCoord = json.getInt("xCoord");
 			yCoord = json.getInt("yCoord");
@@ -48,6 +50,15 @@ public class ShipData {
 		} catch (JSONException e) {
 			throw new ShipDataException("ShipDataException: " + e.getMessage());
 		}
+		if(!validType(type)) throw new ShipDataException("ShipDataException: Invalid Ship Type: " + type);
+	}
+	
+	private boolean validType(String type){
+	    if(!type.equalsIgnoreCase(PilotShip.IDENTIFIER) && 
+	            !type.equalsIgnoreCase(MainShip.IDENTIFIER) && 
+	            !type.equalsIgnoreCase(DestroyerShip.IDENTIFIER))
+	        return false;
+	    else return true;
 	}
 
 	public JSONObject toJSON() throws ShipDataException {

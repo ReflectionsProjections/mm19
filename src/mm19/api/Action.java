@@ -118,8 +118,6 @@ public class Action {
     }
     
     public JSONObject toJSON() throws JSONException {
-        String actionResult;
-        
         JSONObject json = new JSONObject();
         json.put("ID", shipID);
         json.put("actionID", actionID);

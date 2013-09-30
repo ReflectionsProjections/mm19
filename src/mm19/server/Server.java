@@ -4,8 +4,6 @@ package mm19.server;
  * @author mm19
  * 
  * MechMania XIX server.
- * 
- * TODO Needs more javadoc
  */
 
 import java.io.BufferedReader;
@@ -48,7 +46,6 @@ public class Server {
 	// Bookkeeping
 	private static boolean[] connected;
 	private static int playersConnected;
-
 	private static VisualizerLogger visualizerLog = null;
 	private static String visualizerLogURL = "log.out";
 
@@ -69,8 +66,11 @@ public class Server {
 	private static BasicTextEncryptor bte;
 
 	// Interrupts
-	public static final int TURN_TIME_LIMIT = 10000;
+	public static final int TURN_TIME_LIMIT = 1000000;
 	private static Timer interruptTimer;
+	
+	// winnerString
+	private static JSONObject winJSON;
 
 	/**
 	 * Starting point for the game.
@@ -81,6 +81,7 @@ public class Server {
 	    
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+		winJSON = null;
 
 		if (!success) {
 			serverLog.log(Level.SEVERE,
@@ -162,7 +163,6 @@ public class Server {
 
 		// Set up the thread pool
 		threadPool = Executors.newFixedThreadPool(MAX_THREADS);
-
 		return true;
 	}
 
@@ -295,6 +295,8 @@ public class Server {
 		turn.resetTurn();
 
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
+		
+		// This line schedules the interrupts
 		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
@@ -384,7 +386,11 @@ public class Server {
 		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
 
 		// Adding turn to visualizer log
-		visualizerLog.addTurn(playerTurn.toJSON());
+		visualizerLog.addTurn(playerTurn.toJSON());//toLoggingJSON());//
+		if(playerTurn.hasWon() || playerTurn.hasLost()){
+            if(playerTurn.hasWon()) winJSON = playerTurn.winnerJSON();
+            else winJSON = opponentTurn.winnerJSON();
+        }
 
 		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
 		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
@@ -448,7 +454,8 @@ public class Server {
 	 * Shuts down the server and writes the game to the log file
 	 */
 	private static void shutdown() {
-		visualizerLog.writeToFile();
+	    visualizerLog.addTurn(winJSON);	    
+	    visualizerLog.writeToFile();
 		visualizerLog.close();
 
 		starting = false;
