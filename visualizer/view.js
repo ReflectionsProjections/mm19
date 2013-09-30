@@ -5,7 +5,7 @@ var MARGIN = 3;
 var GAME_HEIGHT = CANVAS_HEIGHT - MARGIN * 2;
 
 /*
-	Holds the render state, and functions that render the game
+    Holds the render state, and functions that render the game
 */
 var view = {
 
@@ -14,7 +14,7 @@ var view = {
         paper2 : Raphael("paper2", CANVAS_HEIGHT, CANVAS_HEIGHT)
     },
 
-	/*
+    /*
         Initializes user interface by showing and hiding what needs to be shown and hidden.
     */
     init_ui : function() {
@@ -43,27 +43,21 @@ var view = {
                 var box_width = GAME_HEIGHT / controller.size;
 
                 //width and height of ship in pixels
-                var width = box_width * controller.ship_lib[ship.type].width;
+                var width = box_width * model.ship_lib[ship.type].width;
                 var height = box_width;
 
-                var center_x = MARGIN + (ship.x + 0.5) * box_width;
-                var center_y = MARGIN + (ship.y + 0.5) * box_width;
+                var x = MARGIN + ship.x * box_width;
+                var y = MARGIN + ship.y * box_width;
 
-                //if vertical, swap width and height
-                //update position based on orientation
-                if (ship.orientation === "H") {
-                    center_x += width / 2;
-                } else {
-                    height = width;
-                    width = box_width;
-                    center_y += height / 2;
+                if (ship.orientation === "V") {
+                    //rotate
                 }
+                var ship_status = Math.min(Math.floor((ship.health / model.ship_lib[ship.type].health) * 3) + 1, 3);
 
-                //radii of ellipse
-                var x_rad  = Math.floor(width/2);
-                var y_rad = Math.floor(height/2);
+                var src = "images/" + ship.type.toLocaleLowerCase() + ship_status + ".svg";
+                console.log(src);
 
-                var image = paper.ellipse(center_x, center_y, x_rad, y_rad).attr({"fill" : "#809080"});
+                var image = paper.image(src, x, y, width, height);
             },
             ships);
         };
@@ -79,6 +73,5 @@ var view = {
         draw_ships(model.game_state[1].ships, this.render_state.paper2);
     }
 };
-
 
 

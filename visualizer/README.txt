@@ -21,8 +21,8 @@ TODO :
     * [X] show who won
     * [X] new UI
     * [X] Board resizing - all board space
-    * [ ] Different ship image
-    * [ ] Different ship color
+    * [X] Different ship image
+    * [X] Different ship color
     * [X] GET paramaters
         -round#
         -log location

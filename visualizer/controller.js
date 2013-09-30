@@ -40,8 +40,8 @@ var controller = {
                 document.getElementById("p2_name").innerHTML = setup[2].playerName;
 
                 model.new_game_state(setup);
-                view.render_game(view.render_state, model.game_state);
                 view.init_ui();
+                view.render_game(view.render_state, model.game_state);
             };
 
             // Read in the json file as a string.
@@ -99,21 +99,6 @@ var controller = {
     log : [],
 
     size: 0,
-
-    ship_lib : {
-        "M" : {
-            "width" : 5,
-            "health" : 60
-        },
-        "D" : {
-            "width" : 4,
-            "health" : 40
-        },
-        "P" : {
-            "width" : 2,
-            "health" : 20
-        }
-    },
 
     buttons : {
         play : function() {

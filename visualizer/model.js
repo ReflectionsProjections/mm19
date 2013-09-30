@@ -5,6 +5,21 @@
 var model = {
 	game_state : [],
 
+    ship_lib : {
+        "M" : {
+            "width" : 5,
+            "health" : 60
+        },
+        "D" : {
+            "width" : 4,
+            "health" : 40
+        },
+        "P" : {
+            "width" : 2,
+            "health" : 20
+        }
+    },
+
     /*
         Takes board setup and returns new game state.
     */
