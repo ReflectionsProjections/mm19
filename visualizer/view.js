@@ -46,10 +46,12 @@ var view = {
                 height = Math.floor(height/2);
 
 
-                var center_x = ship.x * box_width + MARGIN + x_offset * box_width * controller.size;
-                var center_y = ship.y * box_width + MARGIN;
+                var center_x = MARGIN + (x_offset + 1) * box_width * controller.size - (ship.x * box_width);
+                var center_y = MARGIN + ship.y * box_width;
 
-                view.render_state.shapes.push(view.render_state.paper.ellipse(center_x, center_y, width, height).attr({"fill" : "#809080"}));
+                var image = view.render_state.paper.ellipse(center_x, center_y, width, height).attr({"fill" : "#809080"});
+
+                view.render_state.shapes.push(image);
             },
             ships);
         };
