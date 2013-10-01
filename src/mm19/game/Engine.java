@@ -213,7 +213,7 @@ public class Engine {
 	 *            The list of actions to be performed by the player
 	 * @return
 	 */
-	public boolean playerTurn(int playerID, ArrayList<Action> actions) {
+	public synchronized boolean playerTurn(int playerID, ArrayList<Action> actions) {
 
 		if(api == null) {
 			setAPI(API.getAPI());
