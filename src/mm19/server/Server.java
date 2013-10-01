@@ -39,7 +39,7 @@ public class Server {
 	// Server constants for now, configurable later
 	public static final int PORT = 6969;
 
-	public static final int MAX_THREADS = 8;
+	public static final int MAX_THREADS = 2;
 	public static final String LOG_PATH = "server_log.txt";
 	public static final Level LOG_LEVEL = Level.INFO;
 
@@ -54,7 +54,7 @@ public class Server {
 	private static Socket[] clientSockets;
 
 	// Concurrent stuff
-	private static ExecutorService threadPool = null;
+	public static ExecutorService threadPool = null;
 	private static boolean starting = false;
 
 	// For communication with the connecting client
@@ -297,7 +297,7 @@ public class Server {
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
 		
 		// This line schedules the interrupts
-		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+		//interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
 	/**
@@ -320,7 +320,7 @@ public class Server {
 	 * @param token
 	 *            The token to be authenticated
 	 */
-	public static synchronized void sendToPlayer(JSONObject json, String token) {
+	public static void sendToPlayer(JSONObject json, String token) {
 		// Authenticate the player.
 		int playerID = authenticate(token);
 
@@ -353,7 +353,7 @@ public class Server {
 	 * @param token
 	 *            The token to authenticate
 	 */
-	public static synchronized void submitTurn(JSONObject obj, String token) {
+	public static void submitTurn(JSONObject obj, String token) {
 		int playerID = authenticate(token);
 		if (playerID == -1) {
 			serverLog.log(Level.WARNING,
@@ -430,7 +430,7 @@ public class Server {
 	 * @param playerID
 	 *            The player to interrupt
 	 */
-	public static synchronized void interruptPlayer(int playerID) {
+	public static void interruptPlayer(int playerID) {
 		int opponentID = api.getCurrOpponentID();
 
 		// This will switch the player/opponent IDs
