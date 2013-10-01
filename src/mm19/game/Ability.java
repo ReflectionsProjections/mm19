@@ -11,6 +11,7 @@ import mm19.game.board.Board;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.Ship;
+import mm19.server.Server;
 
 /**
  * @author mm19
@@ -301,14 +302,19 @@ public class Ability {
             int shipDistance = sonarDistance(targetX, targetY, x, y);
             boolean oldReportFound = false;
             boolean oldReportRemoved = false;
-            for (SonarReport priorReport : sonarReports) {
+            int removeIndex = -1;
+            for (int i = 0; i < sonarReports.size(); i++) {
+            	SonarReport priorReport = sonarReports.get(i);
                 if (priorReport.ship == ship) {
                     oldReportFound = true;
                     if (shipDistance < priorReport.dist) {
-                        sonarReports.remove(priorReport);
+                        removeIndex = i;
                         oldReportRemoved = true;
                     }
                 }
+            }
+            if(removeIndex > -1) {
+            	sonarReports.remove(removeIndex);
             }
             if (!oldReportFound || oldReportRemoved) {
                 sonarReports.add(new SonarReport(shipDistance, ship));

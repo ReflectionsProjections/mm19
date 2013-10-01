@@ -43,11 +43,11 @@ public class API {
 	 */
 	public static API getAPI() {
 		if (m_API == null) {
-			if(!initialized) {
+			if (!initialized) {
 				initialized = true;
 				m_API = new API();
 			}
-			
+
 		}
 
 		return m_API;
@@ -66,7 +66,7 @@ public class API {
 		try {
 			JSONObject json = new JSONObject(s);
 			ShipData mainShip = null;
-			
+
 			// Get the main ship from JSON
 			JSONObject mainShipJSON = json.getJSONObject("mainShip");
 			mainShipJSON.put("type", MainShip.IDENTIFIER);
@@ -80,11 +80,12 @@ public class API {
 			// Get the array of other ships from JSON and verify it's the right
 			// length.
 			JSONArray shipsJSONArray = json.getJSONArray("ships");
-			if (shipsJSONArray.length() > Constants.MAX_SHIPS - 1)//(shipsJSONArray.length() != Constants.MAX_SHIPS - 1) 
-			    {
+			if (shipsJSONArray.length() > Constants.MAX_SHIPS - 1)
+			{
 				throw new APIException("You are trying to place "
 						+ (shipsJSONArray.length() + 1)
-						+ " ships but the game requires " + Constants.MAX_SHIPS);
+						+ " ships but the game requires at most "
+						+ Constants.MAX_SHIPS + " ships");
 			}
 
 			// Get the array of other ships, we can safely assume the main ship
@@ -144,15 +145,14 @@ public class API {
 							actionListObj.getJSONObject(i));
 					actions.add(tempAction);
 				} catch (ActionException e) {
-					playerTurns[playerID]
-							.addError("Error initializing action " + i + ": "
-									+ e.getMessage());
+					playerTurns[playerID].addError("Error initializing action "
+							+ i + ": " + e.getMessage());
 				}
 			}
 
 			boolean success = game.playerTurn(playerID, actions);
-			
-			if(!success) {
+
+			if (!success) {
 				throw new APIException("It is not your turn!");
 			}
 
@@ -223,37 +223,39 @@ public class API {
 	public PlayerTurn getPlayerTurn(int playerID) {
 		return playerTurns[playerID];
 	}
-	
+
 	/**
 	 * Gets the ID of the player of the current turn
+	 * 
 	 * @return
 	 */
 	public int getCurrPlayerID() {
 		return game.getCurrPlayerID();
 	}
-	
+
 	/**
 	 * Gets the ID of the opponent of the current turn
+	 * 
 	 * @return
 	 */
 	public int getCurrOpponentID() {
 		return game.getCurrOpponentID();
 	}
-	
+
 	/**
 	 * Notifies the API (and engine) that a player was interrupted
 	 */
 	public void notifyInterrupt() {
 		game.notifyInterrupt();
 	}
-	
+
 	/**
 	 * Gets whether the game is ready to be started
 	 */
 	public boolean getStarted() {
 		return game.getStarted();
 	}
-	
+
 	/**
 	 * Gets whether the game has a winner
 	 */
