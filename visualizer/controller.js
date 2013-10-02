@@ -40,8 +40,8 @@ var controller = {
                 document.getElementById("p2_name").innerHTML = setup[2].playerName;
 
                 model.new_game_state(setup);
-                view.render_game(view.render_state, model.game_state);
                 view.init_ui();
+                view.render_game();
             };
 
             // Read in the json file as a string.
@@ -78,12 +78,18 @@ var controller = {
             }
         }
 
-        document.getElementById("turn_number").value = "" + this.frame;
+        if ("winner" in turn) {
+            alert(turn.winner + " Wins!");
+            this.buttons.pause();
+            return;
+        }
+
+        view.set_turn(this.frame);
 
         // apply turn to game state
         model.perform_turn(turn);
         // apply that to render state
-        view.render_game();
+        view.render_game(true);
     },
 
     pause : true,
@@ -93,21 +99,6 @@ var controller = {
     log : [],
 
     size: 0,
-
-    ship_lib : {
-        "M" : {
-            "width" : 5,
-            "health" : 60
-        },
-        "D" : {
-            "width" : 4,
-            "health" : 40
-        },
-        "P" : {
-            "width" : 2,
-            "health" : 20
-        }
-    },
 
     buttons : {
         play : function() {
@@ -168,11 +159,11 @@ var controller = {
 
         restart : function() {
             controller.frame = 0;
-            document.getElementById("turn_number").value = 0;
+            view.set_turn(0);
 
             var setup = util.map_array(json_parse, controller.log.slice(0, 3));
             model.new_game_state(setup);
-            view.render_game(view.render_state, controller.game_state);
+            view.render_game();
             view.init_ui();
         },
 
