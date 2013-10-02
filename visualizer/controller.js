@@ -41,7 +41,7 @@ var controller = {
 
                 model.new_game_state(setup);
                 view.init_ui();
-                view.render_game(view.render_state, model.game_state);
+                view.render_game();
             };
 
             // Read in the json file as a string.
@@ -89,7 +89,7 @@ var controller = {
         // apply turn to game state
         model.perform_turn(turn);
         // apply that to render state
-        view.render_game();
+        view.render_game(true);
     },
 
     pause : true,
@@ -163,7 +163,7 @@ var controller = {
 
             var setup = util.map_array(json_parse, controller.log.slice(0, 3));
             model.new_game_state(setup);
-            view.render_game(view.render_state, controller.game_state);
+            view.render_game();
             view.init_ui();
         },
 
