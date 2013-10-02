@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -22,6 +24,7 @@ public class RequestRunnable implements Runnable {
 	protected int playerID;
 
 	protected BufferedReader in = null;
+	protected static Lock mutex = null;
 
 	public RequestRunnable(Socket clientSocket, String token, int pID) {
 		this.clientSocket = clientSocket;
@@ -31,6 +34,10 @@ public class RequestRunnable implements Runnable {
 
 	@Override
 	public void run() {
+		if(mutex == null) {
+			mutex = new ReentrantLock();
+		}
+		
 		Boolean running = true;
 		try {
 			while (running) {
@@ -45,9 +52,14 @@ public class RequestRunnable implements Runnable {
 					in.close();
 					break;
 				}
+				
+				mutex.lock();
 				JSONObject obj = new JSONObject(msg);
+				mutex.unlock();
+				
 				Server.submitTurn(obj, playerToken);
-
+				System.out.print("Processed turn");
+				System.out.println("");
 			}
 
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped.");
