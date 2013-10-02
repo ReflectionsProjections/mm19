@@ -5,6 +5,21 @@
 var model = {
 	game_state : [],
 
+    ship_lib : {
+        "M" : {
+            "width" : 5,
+            "health" : 60
+        },
+        "D" : {
+            "width" : 4,
+            "health" : 40
+        },
+        "P" : {
+            "width" : 2,
+            "health" : 20
+        }
+    },
+
     /*
         Takes board setup and returns new game state.
     */
@@ -20,7 +35,7 @@ var model = {
     */
 	perform_turn : function(turn, ind) {
 		if (ind === undefined) {
-            var ind = this.game_state[0].player_name === turn.playerName ? 0 : 1;
+            var ind = this.game_state[0].player_token === turn.playerToken ? 0 : 1;
         }
 
         var convert_ship = function(ship) {
@@ -33,12 +48,22 @@ var model = {
             };
         };
 
+        var convert_action = function(action) {
+            //TODO : can use ship id to get source x and y
+            return {
+                action_id : action.actionID,
+                target_x : action.actionX,
+                target_y : action.actionY
+            };
+        };
+
         this.game_state[ind] = {
             player_name : turn.playerName,
+            player_token : turn.playerToken,
             resources : turn.resources,
             ships : util.map_array(convert_ship, turn.ships),
-            actions : []
-        }
+            actions : util.map_array(convert_action, turn.actions)
+        };
 	}
 };
 
