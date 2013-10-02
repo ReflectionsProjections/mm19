@@ -46,7 +46,7 @@ public class RequestRunnable implements Runnable {
 						clientSocket.getInputStream()));
 
 				String msg = in.readLine();
-				System.out.println("Recieved turn");
+				//System.out.println("Recieved turn");
 				if (msg == null) {
 					running = false;
 					in.close();
@@ -58,7 +58,7 @@ public class RequestRunnable implements Runnable {
 				mutex.unlock();
 				
 				Server.submitTurn(obj, playerToken);
-				System.out.print("Processed turn");
+				//System.out.print("Processed turn");
 				System.out.println("");
 			}
 

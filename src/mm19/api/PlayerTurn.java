@@ -466,6 +466,7 @@ public class PlayerTurn {
             actionArray.put(action.toJSON());
         }
         json.put("playerName", player.getName());
+        json.put("playerToken", playerToken);
         json.put("resources", player.getResources());
         json.put("ships", shipDataArray);
         json.put("actions", actionArray);

@@ -20,7 +20,7 @@ public class Action {
 	final public int actionExtraVar;
 
     public static final String SHOOT_IDENTIFIER = "F";
-    public static final String BURST_SHOT_IDENTIFIER = "BS";
+    public static final String BURST_SHOT_IDENTIFIER = "B";
     public static final String SONAR_IDENTIFIER = "S";
     public static final String MOVE_HORIZONTAL_IDENTIFIER = "MH";
     public static final String MOVE_VERTICAL_IDENTIFIER = "MV";
@@ -120,7 +120,7 @@ public class Action {
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
         json.put("ID", shipID);
-        json.put("actionID", actionID);
+        json.put("actionID", getIdentifierByType(actionID));
         json.put("actionX", actionXVar);
         json.put("actionY", actionYVar);
         json.put("actionExtra", actionExtraVar);
