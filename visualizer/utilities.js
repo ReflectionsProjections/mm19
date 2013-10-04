@@ -29,7 +29,14 @@ var util = {
         }
 
         return ret_val;
+    },
+
+    get_url_paramater : function(name) {
+        var reg = new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)');
+        var match = reg.exec(location.search);
+        if (match) {
+            return decodeURIComponent(match[1]);
+        }
+        return null;
     }
 };
-
-
