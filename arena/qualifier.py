@@ -5,7 +5,6 @@ import signal
 import json
 
 path, filename = os.path.split(os.path.abspath(__file__))
-#path = r"/home/more/safe/sam/project/acm/mm19/arena"
 path += "/teams"
 teams = {}
 OUTPUT_NAME = "qualified_teams.txt"
@@ -22,23 +21,23 @@ def alarm_handler(signum, frame):
 signal.signal(signal.SIGALRM, alarm_handler)
 
 
-def add_team(team, name_file, run_file):
+def add_team(team, name_file, team_dir):
     with open(name_file) as f:
         name = f.readlines()[0].rstrip()
     if name in teams:
         print "error the team "+team+" could not be added"
         print name+" has aready been used"
         return
-    if qualify(name, run_file):
-        teams[name] = run_file
+    if qualify(name, team_dir):
+        teams[name] = team_dir
     else:
         print name+" failed to qualify"
 
 
-def qualify(name, run_file):
+def qualify(name, team_dir):
     signal.alarm(TIMEOUT)  # set timeout
     try:
-        result = mm19_runner.testGame(name, run_file)
+        result = mm19_runner.testGame(name, team_dir)
         signal.alarm(0)  # cancel alarm
         return result
     except Alarm:
@@ -53,7 +52,7 @@ def main():
             if "run.sh" in files:
                 add_team(dir_entry,
                          os.path.join(dir_entry_path, "name.txt"),
-                         os.path.join(dir_entry_path, "run.sh"))
+                         dir_entry_path)
             else:
                 print "error missing run.sh for entry "+dir_entry
         else:
