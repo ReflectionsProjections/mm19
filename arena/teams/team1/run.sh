@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar testClient.jar oneFish
+java -jar ./testClient.jar oneFish
