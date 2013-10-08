@@ -30,7 +30,7 @@ args: match_name , the players names, the scripts used to run them
 def runGame(match_name, name1, name2, run_script1, run_script2):
 
     server = Popen(["java", "-jar", "server.jar", match_name], stdout=FNULL)
-    time.sleep(1)
+    time.sleep(3)
     bot1 = Popen(os.path.join(run_script1, "run.sh"), stdout=FNULL,cwd=run_script1)
     bot2 = Popen(os.path.join(run_script2, "run.sh"), stdout=FNULL,cwd=run_script2)
     try:
