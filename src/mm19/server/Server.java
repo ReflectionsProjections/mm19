@@ -27,6 +27,7 @@ import mm19.game.Constants;
 import mm19.logging.VisualizerLogger;
 
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Server {
@@ -353,7 +354,7 @@ public class Server {
 	 * @param token
 	 *            The token to authenticate
 	 */
-	public static void submitTurn(JSONObject obj, String token) {
+	public static synchronized void submitTurn(JSONObject obj, String token) {
 		int playerID = authenticate(token);
 		if (playerID == -1) {
 			serverLog.log(Level.WARNING,
@@ -386,7 +387,11 @@ public class Server {
 		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
 
 		// Adding turn to visualizer log
-		visualizerLog.addTurn(playerTurn.toJSON());//toLoggingJSON());//
+		try {
+			visualizerLog.addTurn(playerTurn.getLoggingJSON());//toLoggingJSON());//
+		} catch (JSONException e) {
+			
+		}
 		if(playerTurn.hasWon() || playerTurn.hasLost()){
             if(playerTurn.hasWon()) winJSON = playerTurn.winnerJSON();
             else winJSON = opponentTurn.winnerJSON();
@@ -430,7 +435,7 @@ public class Server {
 	 * @param playerID
 	 *            The player to interrupt
 	 */
-	public static void interruptPlayer(int playerID) {
+	public static synchronized void interruptPlayer(int playerID) {
 		int opponentID = api.getCurrOpponentID();
 
 		// This will switch the player/opponent IDs
