@@ -41,6 +41,10 @@
   height:30px;
 }
 
+.file_ui {
+  display: none;
+}
+
 #p1_info {
   float:left;
 }
