@@ -31,9 +31,13 @@ def runGame(match_name, name1, name2, run_script1, run_script2):
 
     server = Popen(["java", "-jar", "server.jar", match_name], stdout=FNULL)
     time.sleep(1)
-    bot1 = Popen(run_script1 + "/run.sh", stdout=FNULL,cwd=run_script1)
-    bot2 = Popen(run_script2 + "/run.sh", stdout=FNULL,cwd=run_script2)
-    server.wait()  # wait for the sever to exit
+    bot1 = Popen(os.path.join(run_script1, "run.sh"), stdout=FNULL,cwd=run_script1)
+    bot2 = Popen(os.path.join(run_script2, "run.sh"), stdout=FNULL,cwd=run_script2)
+    try:
+        server.wait()  # wait for the sever to exit
+    except KeyboardInterrupt: # if the use kills the running script
+        server.kill() # cleanly kill server
+
     if (bot1.poll() is None):
         bot1.terminate()  # kill client if it fails to exit
     if bot2.poll() is None:
@@ -74,7 +78,7 @@ def main():
         else:
             assert False, "unknown option"
     try:
-        bot1_path = os.getcwd() + "/" + args[0]
+        bot1_path = os.path.join(os.getcwd(), args[0])
     except IndexError:
         print "missing bot to run"
         sys.exit(1)
@@ -82,7 +86,7 @@ def main():
     files = os.listdir(bot1_path)
     if "name.txt" in files:
         if "run.sh" in files:
-            with open(bot1_path + "/name.txt") as f:
+            with open(os.path.join(bot1_path, "name.txt")) as f:
                 name = f.readlines()[0].rstrip()
             if self_mode:
                 print runGame(output, name, name,
