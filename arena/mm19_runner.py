@@ -106,10 +106,10 @@ def usage():
 
  usage: mm19_runner.py [-o output_file] path_to_run.sh
 
- -o : set the log file to -save the outcome\ 
-will make log.out if not set
+ -o or --logfile: set the name log file to save the outcome\ 
+will default to log.out if not set
 
- -s : play a copy of your bot insted of the dummy bot
+ -s or --self: play a copy of your bot insted of the dummy bot
 
 the input file should be a list the the teams competing
 
