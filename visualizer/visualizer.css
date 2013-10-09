@@ -95,3 +95,12 @@
   visibility:hidden;
 }
 
+#winner_display {
+  visibility:hidden;
+  position: absolute;
+  left:300px;
+  top:300px;
+}
+
+
+
