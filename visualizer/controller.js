@@ -10,7 +10,7 @@ var controller = {
     init : function () {
         var path = util.get_url_paramater("path");
         if (path) {
-            util.get_text(path, this.init_game);
+            util.get_text(path, controller.init_game);
         } else {
             controller.load_file();
         }
