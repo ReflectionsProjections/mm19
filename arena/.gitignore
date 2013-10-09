@@ -53,3 +53,5 @@ tramp
 mm19Arena.py
 
 qualified_teams.txt
+
+*.tmp

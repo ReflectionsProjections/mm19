@@ -101,8 +101,13 @@ var controller = {
         }
 
         if ("winner" in turn) {
-            alert(turn.winner + " Wins!");
+            view.display_winner(turn.winner);
             this.buttons.pause();
+            if (util.get_url_paramater("path")) {
+                setTimeout(function() {
+                    location.reload();
+                }, 10000);
+            }
             return;
         }
 

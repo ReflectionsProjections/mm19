@@ -99,8 +99,9 @@
   visibility:hidden;
   position: absolute;
   left:300px;
-  top:300px;
+  top:200px;
+  font-size:500%;
+  color:#FF1493;
 }
-
 
 

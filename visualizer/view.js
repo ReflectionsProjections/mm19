@@ -91,6 +91,12 @@ var view = {
         }
     },
 
+    display_winner : function (winner) {
+        var disp = document.getElementById('winner_display');
+        disp.innerHTML = winner + ' Wins!';
+        disp.style.visibility = 'visible';
+    },
+
     /*
         do_animate is a flag that says whether we should render animations or not.
     */
