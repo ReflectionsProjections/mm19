@@ -6,9 +6,12 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from mm19_runner import git_pull, runGame
 from qualifier import qualifyed_teams
 import random
+import time
+
+
 ARENA_VISUALIZER_FILE = "current_match.tmp"
 
-teams = qualifyed_teams()
+teams = {}
 #def qualifyed_teams(): 
 #    return { 'Roger': '/home/more/safe/sam/project/acm/mm19/arena/teams/mm19-test-3', 'oneFish': '/home/more/safe/sam/project/acm/mm19/arena/teams/team1'}
 
@@ -23,9 +26,10 @@ class mmRequstHandler(SimpleHTTPRequestHandler,object):
             with open(ARENA_VISUALIZER_FILE) as f:
                 if f:
                     self.send_response(200)
-                    self.send_header("display_text","exhibition match")
+                    self.send_header("display_text","Exhibition Match")
                     self.end_headers()
                     self.wfile.write(f.read())
+                    self.close_connection()
                 else:
                     self.send_error(500)
                 play_game()
@@ -54,7 +58,7 @@ HandlerClass = mmRequstHandler
 ServerClass  = BaseHTTPServer.HTTPServer
 Protocol     = "HTTP/1.0"
 
-def main():
+def start_web_server():
     if sys.argv[1:]:
         port = int(sys.argv[1])
     else:
@@ -67,7 +71,14 @@ def main():
     sa = httpd.socket.getsockname()
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
     httpd.serve_forever()
+
+def main():
+    
+    global teams
+    teams = qualifyed_teams()
+    play_game()
+    start_web_server()
     
 if __name__=="__main__":
-    play_game()
     main()
+
