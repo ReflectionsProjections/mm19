@@ -7,7 +7,9 @@ from mm19_runner import git_pull, runGame
 from qualifier import qualifyed_teams
 import random
 import time
+import threading
 
+GameThread = {}
 
 ARENA_VISUALIZER_FILE = "current_match.tmp"
 
@@ -23,16 +25,19 @@ class mmRequstHandler(SimpleHTTPRequestHandler,object):
     def do_GET(self):
         if self.path == "/get_game.log": #alows me to get current game
             print "getting game"
+            global GameThread
+            GameThread.join()
             with open(ARENA_VISUALIZER_FILE) as f:
                 if f:
                     self.send_response(200)
                     self.send_header("display_text","Exhibition Match")
                     self.end_headers()
                     self.wfile.write(f.read())
-                    self.close_connection()
+                    print self.close_connection
                 else:
                     self.send_error(500)
-                play_game()
+                GameThread = threading.Thread(target=play_game)
+                GameThread.start()
         else:
             self.path = "/visualizer" + self.path
             print self.path
@@ -76,7 +81,10 @@ def main():
     
     global teams
     teams = qualifyed_teams()
-    play_game()
+    global GameThread
+    GameThread = threading.Thread(target=play_game)
+    GameThread.start()
+    
     start_web_server()
     
 if __name__=="__main__":
