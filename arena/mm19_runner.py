@@ -10,6 +10,7 @@ import json
 
 
 FNULL = open(os.devnull, 'w')
+PLAYERONESTDOUT = FNULL
 path, filename = os.path.split(os.path.abspath(__file__))
 dummy_player_path = \
     path+'/dummy'
@@ -30,10 +31,17 @@ args: match_name , the players names, the scripts used to run them
 def runGame(match_name, name1, name2, run_script1, run_script2):
 
     server = Popen(["java", "-jar", "server.jar", match_name], stdout=FNULL)
-    time.sleep(1)
-    bot1 = Popen(run_script1 + "/run.sh", stdout=FNULL,cwd=run_script1)
-    bot2 = Popen(run_script2 + "/run.sh", stdout=FNULL,cwd=run_script2)
-    server.wait()  # wait for the sever to exit
+    print FMABY
+    print "---------------"
+    time.sleep(2)
+    bot1 = Popen(os.path.join(run_script1, "run.sh"), 
+                 stdout=PLAYERONESTDOUT,cwd=run_script1)
+    bot2 = Popen(os.path.join(run_script2, "run.sh"), stdout=FNULL,cwd=run_script2)
+    try:
+        server.wait()  # wait for the sever to exit
+    except KeyboardInterrupt: # if the use kills the running script
+        server.kill() # cleanly kill server
+
     if (bot1.poll() is None):
         bot1.terminate()  # kill client if it fails to exit
     if bot2.poll() is None:
@@ -54,7 +62,7 @@ def runGame(match_name, name1, name2, run_script1, run_script2):
 def main():
     try:
         opts, args = getopt.gnu_getopt(sys.argv[1:],
-                                       "hso:", ["help", "self", "logfile="])
+                                       "hsvo:", ["help", "self", "verbose", "logfile="])
     except getopt.GetoptError as err:
         # print help information and exit:
         print str(err)  # will print something like "option -a not recognized"
@@ -69,12 +77,19 @@ def main():
             sys.exit()
         elif o in ("-o", "--logfile"):
             output = a
+
+        elif o in ("-v", "--verbose"):
+            print "hi"
+            global PLAYERONESTDOUT
+            PLAYERONESTDOUT = None
+
+
         elif o in ("-s", "--self"):
             self_mode = True
         else:
             assert False, "unknown option"
     try:
-        bot1_path = os.getcwd() + "/" + args[0]
+        bot1_path = os.path.join(os.getcwd(), args[0])
     except IndexError:
         print "missing bot to run"
         sys.exit(1)
@@ -82,7 +97,7 @@ def main():
     files = os.listdir(bot1_path)
     if "name.txt" in files:
         if "run.sh" in files:
-            with open(bot1_path + "/name.txt") as f:
+            with open(os.path.join(bot1_path, "name.txt")) as f:
                 name = f.readlines()[0].rstrip()
             if self_mode:
                 print runGame(output, name, name,
@@ -102,10 +117,12 @@ def usage():
 
  usage: mm19_runner.py [-o output_file] path_to_run.sh
 
- -o : set the log file to -save the outcome\ 
-will make log.out if not set
+ -o or --logfile: set the name log file to save the outcome\ 
+will default to log.out if not set
 
- -s : play a copy of your bot insted of the dummy bot
+ -s or --self: play a copy of your bot insted of the dummy bot
+
+ -v or --verbose: Prints your players copy of stdout to the screen
 
 the input file should be a list the the teams competing
 
