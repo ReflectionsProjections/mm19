@@ -31,10 +31,6 @@ var view = {
         document.getElementById("board").style.visibility = "visible";
         view.render_state.paper1.canvas.style.backgroundColor = "#00CED1";
         view.render_state.paper2.canvas.style.backgroundColor = "#00CED1";
-        var round = util.get_url_paramater("round");
-        if (round !== null) {
-            document.getElementById("round_info").innerHTML = "Round " + round;
-        }
     },
 
     set_turn : function(turn_number) {

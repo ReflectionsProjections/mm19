@@ -10,9 +10,14 @@ var controller = {
     init : function () {
         var path = util.get_url_paramater("path");
         if (path) {
-            util.get_text(path,
-                function (raw_text) {
-                    controller.init_game(raw_text);
+            util.get_url(path,
+                function (request) {
+                    var raw_log = request.responseText;
+                    controller.init_game(raw_log);
+                    var round = request.getResponseHeader("display_text");
+                    if (round !== null) {
+                        document.getElementById("round_info").innerHTML = round;
+                    }
                     controller.buttons.play();
                 });
         } else {
