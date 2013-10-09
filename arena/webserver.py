@@ -20,14 +20,15 @@ class mmRequstHandler(SimpleHTTPRequestHandler,object):
     def do_GET(self):
         if self.path == "/get_game.log": #alows me to get current game
             print "getting game"
-            play_game()
             with open(ARENA_VISUALIZER_FILE) as f:
                 if f:
                     self.send_response(200)
+                    self.send_header("display_text","exhibition match")
                     self.end_headers()
                     self.wfile.write(f.read())
                 else:
                     self.send_error(500)
+                play_game()
         else:
             self.path = "/visualizer" + self.path
             print self.path
@@ -68,4 +69,5 @@ def main():
     httpd.serve_forever()
     
 if __name__=="__main__":
+    play_game()
     main()
