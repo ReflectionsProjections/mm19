@@ -22,17 +22,20 @@ def testGame(name, run_script):
                      run_script, dummy_player_path)
     return (winner == name)
 
-"""
-runs this years game
-args: match_name , the players names, the scripts used to run them
-"""
 
+def git_pull(git_path): 
+     fetch = Popen(["git", "fetch", "--all"], cwd=git_path)
+     fetch.wait()
+     reset = Popen(["git", "reset", "--hard", "origin/master"], cwd=git_path)
+     reset.wait()
 
 def runGame(match_name, name1, name2, run_script1, run_script2):
-
+    """
+    runs this years game
+    args: match_name , the players names, the scripts used to run them
+    """
     server = Popen(["java", "-jar", "server.jar", match_name], stdout=FNULL)
-    print FMABY
-    print "---------------"
+ 
     time.sleep(2)
     bot1 = Popen(os.path.join(run_script1, "run.sh"), 
                  stdout=PLAYERONESTDOUT,cwd=run_script1)
