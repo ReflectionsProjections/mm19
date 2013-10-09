@@ -4,13 +4,13 @@ import os
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from mm19_runner import git_pull, runGame
-#from qualifier import qualifyed_teams
+from qualifier import qualifyed_teams
 import random
 ARENA_VISUALIZER_FILE = "current_match.tmp"
 
-
-def qualifyed_teams(): 
-    return { 'Roger': '/home/more/safe/sam/project/acm/mm19/arena/teams/mm19-test-3', 'oneFish': '/home/more/safe/sam/project/acm/mm19/arena/teams/team1'}
+teams = qualifyed_teams()
+#def qualifyed_teams(): 
+#    return { 'Roger': '/home/more/safe/sam/project/acm/mm19/arena/teams/mm19-test-3', 'oneFish': '/home/more/safe/sam/project/acm/mm19/arena/teams/team1'}
 
 path, filename = os.path.split(os.path.abspath(__file__))
 path += "/teams"
@@ -45,7 +45,6 @@ def update_repos():
         
 
 def play_game():
-    teams = qualifyed_teams()
     bot1,bot2 = random.sample(teams,2)
     runGame(ARENA_VISUALIZER_FILE, bot1, bot2, teams[bot1], teams[bot2])
     
