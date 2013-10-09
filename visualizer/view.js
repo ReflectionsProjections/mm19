@@ -104,15 +104,16 @@ var view = {
             var x = view.g2p(ship.x);
             var y = view.g2p(ship.y);
 
-            if (ship.orientation === "V") {
-                //rotate
-            }
             //map ship health to integers 1, 2, 3 for ship's health status
             var ship_status = Math.min(Math.floor((ship.health / model.ship_lib[ship.type].health) * 3) + 1, 3);
 
             var src = "images/" + ship.type.toLocaleLowerCase() + ship_status + ".svg";
 
             var image = paper.image(src, x, y, width, height);
+
+            if (ship.orientation === "V") {
+                image.transform("r90," + (x + (box_width / 2)) + "," + (y + (box_width / 2)));
+            }
         };
 
         var draw_animation = function(my_paper, enemy_paper, action) {
