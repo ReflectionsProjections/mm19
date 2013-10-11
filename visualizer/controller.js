@@ -8,6 +8,24 @@ var controller = {
         Inititilizes UI.
     */
     init : function () {
+        var path = util.get_url_paramater("path");
+        if (path) {
+            util.get_url(path,
+                function (request) {
+                    var raw_log = request.responseText;
+                    controller.init_game(raw_log);
+                    var round = request.getResponseHeader("display_text");
+                    if (round !== null) {
+                        document.getElementById("round_info").innerHTML = round;
+                    }
+                    controller.buttons.play();
+                });
+        } else {
+            controller.load_file();
+        }
+    },
+
+    load_file : function() {
         // Check for the various File API support.
         if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
             alert('The File APIs are not fully supported in this browser.');
@@ -24,24 +42,7 @@ var controller = {
 
             // Closure to capture the file information.
             reader.onload = function(e) {
-                controller.log = e.target.result.split("\n");
-                controller.frame = 0;
-                controller.pause = true;
-
-                try {
-                    var setup = util.map_array(json_parse, controller.log.slice(0, 3));
-                } catch (error) {
-                    console.log(error.message);
-                    console.log("One of the first three lines are invalid JSON.  Did you upload the right file?");
-                    return;
-                }
-
-                document.getElementById("p1_name").innerHTML = setup[1].playerName;
-                document.getElementById("p2_name").innerHTML = setup[2].playerName;
-
-                model.new_game_state(setup);
-                view.init_ui();
-                view.render_game();
+                controller.init_game(e.target.result);
             };
 
             // Read in the json file as a string.
@@ -50,6 +51,32 @@ var controller = {
 
         //cannot interact with anything on the page until this statement
         document.getElementById('file_select').addEventListener('change', file_select_handler, false);
+        util.map_array(
+            function (node) {
+                node.style.display = 'inline';
+            },
+            document.getElementsByClassName('file_ui'));
+    },
+
+    init_game : function(raw_log) {
+        controller.log = raw_log.split("\n");
+        controller.frame = 0;
+        controller.pause = true;
+
+        try {
+            var setup = util.map_array(json_parse, controller.log.slice(0, 3));
+        } catch (error) {
+            console.log(error.message);
+            console.log("One of the first three lines are invalid JSON.  Did you upload the right file?");
+            return;
+        }
+
+        document.getElementById("p1_name").innerHTML = setup[1].playerName;
+        document.getElementById("p2_name").innerHTML = setup[2].playerName;
+
+        model.new_game_state(setup);
+        view.init_ui();
+        view.render_game();
     },
 
     /*
@@ -79,8 +106,13 @@ var controller = {
         }
 
         if ("winner" in turn) {
-            alert(turn.winner + " Wins!");
+            view.display_winner(turn.winner);
             this.buttons.pause();
+            if (util.get_url_paramater("path")) {
+                setTimeout(function() {
+                    location.reload();
+                }, 10000);
+            }
             return;
         }
 

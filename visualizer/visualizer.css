@@ -41,6 +41,10 @@
   height:30px;
 }
 
+.file_ui {
+  display: none;
+}
+
 #p1_info {
   float:left;
 }
@@ -90,4 +94,14 @@
   list-style:none;
   visibility:hidden;
 }
+
+#winner_display {
+  visibility:hidden;
+  position: absolute;
+  left:300px;
+  top:200px;
+  font-size:500%;
+  color:#FF1493;
+}
+
 

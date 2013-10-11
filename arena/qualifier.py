@@ -44,7 +44,7 @@ def qualify(name, team_dir):
         print name + " timed out"
         return False
 
-def main():
+def qualifyed_teams():
     for dir_entry in os.listdir(path):
         dir_entry_path = os.path.join(path, dir_entry)
         files = os.listdir(dir_entry_path)
@@ -58,9 +58,10 @@ def main():
         else:
             print "error missing name.text for entry "+dir_entry
             
-    print teams
-    with open(OUTPUT_NAME, 'w') as f:
-        f.write(json.dumps(teams))
+    return teams
+    
 
 if __name__ == "__main__":
-    main()
+    qualifyed_teams()
+    with open(OUTPUT_NAME, 'w') as f:
+        f.write(json.dumps(teams))

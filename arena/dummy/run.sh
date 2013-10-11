@@ -1,2 +1,2 @@
 #!/bin/bash
-./testClient.jar dummy
+java -jar ./testClient.jar dummy
