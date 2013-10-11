@@ -64,6 +64,10 @@ public class API {
 	 */
 	public void addPlayer(String s, String playerToken) throws APIException {
 		try {
+			if (s == null) {
+				// Connection request, throw exception
+				throw new APIException("Null data sequence");
+			}
 			JSONObject json = new JSONObject(s);
 			ShipData mainShip = null;
 
