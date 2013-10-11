@@ -246,10 +246,10 @@ public class Engine {
 							action.shipID,
 							ShipActionResult.ActionResult.SUCCESS));
 					playerTurn.addAction(action);
+					playerTurn.addHitReport(hitResponse);
 					if(hitResponse.shotSuccessful) {
-						playerTurn.addHitReport(hitResponse);
+						opponentPlayerTurn.addHitReport(hitResponse);
 					}
-					opponentPlayerTurn.addHitReport(hitResponse);
 				} catch (EngineException e) {
 					handleEngineException(e, playerID, action);
 				}
