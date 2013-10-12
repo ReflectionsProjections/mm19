@@ -23,7 +23,11 @@ signal.signal(signal.SIGALRM, alarm_handler)
 
 def add_team(team, name_file, team_dir,testGame):
     with open(name_file) as f:
-        name = f.readlines()[0].rstrip()
+        try:
+            name = f.readlines()[0].rstrip()
+        except IndexError:
+            print team + " are have an empty name file"
+            name = "looser"
     if name in teams:
         print "error the team "+team+" could not be added"
         print name+" has aready been used"
