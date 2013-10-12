@@ -325,7 +325,7 @@ public class Server {
 	 * @param token
 	 *            The token to be authenticated
 	 */
-	public static void sendToPlayer(JSONObject json, String token) {
+	public static synchronized void sendToPlayer(JSONObject json, String token) {
 		// Authenticate the player.
 		int playerID = authenticate(token);
 
@@ -441,7 +441,7 @@ public class Server {
 	 * @param playerID
 	 *            The player ID of the turn
 	 */
-	private static void sendToAPI(JSONObject obj, int playerID) {
+	private static synchronized void sendToAPI(JSONObject obj, int playerID) {
 		try {
 			api.processTurn(obj, playerID);
 		} catch (APIException e) {
@@ -479,7 +479,7 @@ public class Server {
 	/**
 	 * Shuts down the server and writes the game to the log file
 	 */
-	private static void shutdown() {
+	private static synchronized void shutdown() {
 	    visualizerLog.addTurn(winJSON);	    
 	    visualizerLog.writeToFile();
 		visualizerLog.close();
