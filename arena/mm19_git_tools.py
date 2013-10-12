@@ -75,7 +75,7 @@ def push_repos():
         new_team = os.path.join(path,"teams", "mm19-{}".format(x))
         
         git(new_team, "add", "-u")
-        git(new_team, "commit", "-m", "fix tie" )
+        git(new_team, "commit", "-m", "update jar" )
         git(new_team, "pull")
         git(new_team, "push")
 
@@ -83,7 +83,7 @@ def push_repos():
 if __name__ == "__main__":
 #rm_all("visualizer/index.html") 
     cp_all("server.jar")
-#cp_all("mm19_runner.py")
+    #cp_all("mm19_runner.py")
     #cp_all("RESPONSECODES.txt")
     push_repos()
 #push_repos()
