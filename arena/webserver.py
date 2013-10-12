@@ -3,7 +3,8 @@ import sys
 import os
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
-from mm19_runner import git_pull, runGame
+from mm19_runner import  runGame
+from mm19_git_tools import git_pull
 from qualifier import qualifyed_teams
 import random
 import time

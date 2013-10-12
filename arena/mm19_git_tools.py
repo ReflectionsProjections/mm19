@@ -18,6 +18,11 @@ def git(mydir,*args):
     git_proc = Popen((["git"]+list(args)), cwd=mydir)
     git_proc.wait()
 
+def rm(rmdir):
+    rm_proc = Popen(rmdir)
+    rm_proc.wait()
+
+
 def cp(source, dest, *args):
     cp_proc = Popen((["cp"]+list(args) + [source, dest]))
     cp_proc.wait()
@@ -30,8 +35,8 @@ def git_pull(git_path):
 
 def clone_all():
     repo =  'ssh://git@bitbucket.org/mm19-{}/mm19-{}.git'
-    for x in xrange(1, 61):
-        git_clone(repo.format(x, x), os.path.join(path, "arena"))
+    for x in xrange(1, 51):
+        git_clone(repo.format(x, x), os.path.join(path, "teams"))
         #print os.path.join(path,"teams")
         #print repo.format(x,x)
 def make_repos():
@@ -46,4 +51,35 @@ def make_repos():
         git(new_team, "add", ".")
         git(new_team, "commit", "-m", "good luck" )
         git(new_team, "push",  "--set-upstream", "origin", "master")
-make_repos()
+
+def rm_all(file_name):
+    
+    for x in xrange(1, 51):
+         file_path = os.path.join(path, "teams", "mm19-{}".format(x), file_name)
+         print 'rm', file_path
+         #rm(file_path)
+
+def cp_all(file_name):
+    
+    for x in xrange(1, 51):
+         file_path = os.path.join(path, file_name)
+         loc_path = os.path.join(path, "teams", "mm19-{}".format(x),"./")
+         print 'cp', file_path, loc_path
+         cp(file_path, loc_path)
+
+def push_repos():
+    
+    #repo =  'ssh://git@bitbucket.org/mm19-{}/mm19-{}.git'
+    #repo =  'ssh://git@mm19/mm19-{}/mm19-{}.git'
+    for x in xrange(1, 51):
+        new_team = os.path.join(path,"teams", "mm19-{}".format(x))
+        
+        #git(new_team, "add", "-u")
+        #git(new_team, "commit", "-m", "he" )
+        git(new_team, "pull")
+        git(new_team, "push")
+
+#rm_all("visualizer/index.html") 
+#cp_all("server.jar")
+#cp_all("MechManiaBooklet.pdf")
+#push_repos()
