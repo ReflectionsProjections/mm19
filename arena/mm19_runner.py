@@ -111,7 +111,7 @@ def main():
         else:
             print "error can't find run.sh"
     else:
-        print "error can't find name.text"
+        print "error can't find name.txt"
 
 
 def usage():
