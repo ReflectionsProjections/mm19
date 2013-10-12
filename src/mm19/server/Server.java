@@ -311,7 +311,7 @@ public class Server {
      * @param token
      *            The token to be authenticated
      */
-    public static void sendToPlayer(JSONObject json, String token) {
+    public static synchronized void sendToPlayer(JSONObject json, String token) {
         // Authenticate the player.
         int playerID = authenticate(token);
 
@@ -341,7 +341,24 @@ public class Server {
      * @param token
      *            The token to authenticate
      */
-    public static synchronized void submitTurn(JSONObject obj, String token) {
+    public static synchronized void submitTurn(JSONObject obj, String token, boolean quit) {
+        if(quit) {
+            int playerID = authenticate(token);
+            int opponentID = api.getCurrOpponentID();
+            interruptTimer.cancel();
+            interruptTimer.purge();
+            interruptTimer = new Timer();
+            PlayerTurn playerTurn = api.getPlayerTurn(playerID);
+            PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+            if(playerID == api.getCurrPlayerID()) {
+                winJSON = playerTurn.winnerJSON();
+            }
+            else {
+                winJSON = opponentTurn.winnerJSON();
+            }
+            shutdown();
+            return;
+        }
         int playerID = authenticate(token);
         if(playerID == -1) {
             serverLog.log(Level.WARNING, "Player not authenticated when trying to send to API");
@@ -380,6 +397,7 @@ public class Server {
 
         }
         if(playerTurn.hasWon() || playerTurn.hasLost()) {
+
             if(playerTurn.hasWon()) winJSON = playerTurn.winnerJSON();
             else winJSON = opponentTurn.winnerJSON();
         }
@@ -506,4 +524,5 @@ public class Server {
     public static void addTurnToVisualizerLog(JSONObject turn) {
         visualizerLog.addTurn(turn);
     }
+
 }
