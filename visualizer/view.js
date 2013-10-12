@@ -1,7 +1,6 @@
-
 //all in pixels
-var CANVAS_HEIGHT = Math.min(window.innerWidth / 2, window.innerHeight - 80);
 var MARGIN = 3;
+var CANVAS_HEIGHT = Math.min(window.innerWidth / 2 - MARGIN, window.innerHeight - 80);
 var GAME_HEIGHT = CANVAS_HEIGHT - MARGIN * 2;
 
 //in ms
