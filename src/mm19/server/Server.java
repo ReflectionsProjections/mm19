@@ -358,7 +358,23 @@ public class Server {
 	 * @param token
 	 *            The token to authenticate
 	 */
-	public static synchronized void submitTurn(JSONObject obj, String token) {
+	public static synchronized void submitTurn(JSONObject obj, String token, boolean quit) {
+		if(quit){
+			int playerID = authenticate(token);
+			int opponentID = api.getCurrOpponentID();
+			interruptTimer.cancel();
+			interruptTimer.purge();
+			interruptTimer = new Timer();
+			PlayerTurn playerTurn = api.getPlayerTurn(playerID);
+			PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+			if (playerID == api.getCurrPlayerID()) {
+				winJSON = playerTurn.winnerJSON();
+			} else{
+				winJSON = opponentTurn.winnerJSON();
+			}
+			shutdown();
+			return;
+		}
 		int playerID = authenticate(token);
 		if (playerID == -1) {
 			serverLog.log(Level.WARNING,

@@ -57,7 +57,7 @@ public class RequestRunnable implements Runnable {
 				JSONObject obj = new JSONObject(msg);
 				mutex.unlock();
 				
-				Server.submitTurn(obj, playerToken);
+				Server.submitTurn(obj, playerToken, false);
 				//System.out.print("Processed turn");
 				//System.out.println("");
 			}
@@ -65,6 +65,7 @@ public class RequestRunnable implements Runnable {
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped.");
 		} catch (IOException e) {
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped. (SocketException)");
+			Server.submitTurn(null, playerToken, true);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
