@@ -31,9 +31,23 @@ def runGame(match_name, name1, name2, run_script1, run_script2):
     server = Popen(["java", "-jar", "server.jar", match_name], stdout=FNULL)
  
     time.sleep(2)
-    bot1 = Popen(os.path.join(run_script1, "run.sh"), 
+    try: 
+        bot1 = Popen(os.path.join(run_script1, "run.sh"), 
                  stdout=PLAYERONESTDOUT,cwd=run_script1)
-    bot2 = Popen(os.path.join(run_script2, "run.sh"), stdout=FNULL,cwd=run_script2)
+    except OSError:
+        server.terminate()
+        server.wait()
+        return {"winner" : """#fail#"""}
+    try:
+        bot2 = Popen(os.path.join(run_script2, "run.sh"),
+                     stdout=FNULL,cwd=run_script2)
+
+    except OSError:
+        bot1.terminate()
+        server.terminate()
+        server.wait()
+        return {"winner" : """#fail#"""}
+        
     try:
         server.wait()  # wait for the sever to exit
     except KeyboardInterrupt: # if the use kills the running script

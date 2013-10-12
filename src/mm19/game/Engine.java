@@ -88,6 +88,7 @@ public class Engine {
 		else if (p2.getResources() > p1.getResources())
 			return p2;
 
+		Server.serverLog.log(Level.INFO, "This game was a complete tie, defaulting to player 2.");
 		return p2;
 	}
 
@@ -318,17 +319,27 @@ public class Engine {
 			winner = true;
 		}
 		else if (turn > TURN_LIMIT) { // I changed this to an else for now so both players can't be defeated. Feel free to tweak in the future. - Ace
-			player = breakTie(player, opponent);
+			player = breakTie(player, opponent);	
+			playerID = player.getPlayerID();
+			int opponentID = (playerID + 1) % Constants.PLAYER_COUNT;
 			opponent = players[(player.getPlayerID() + 1)
 					% Constants.PLAYER_COUNT]; // What does this bit of logic do? (Is this server supposed to run multiple 2-player games simultaneously? Otherwise, this makes no sense to me.) - Ace
-
+			
+			// This is the winner
+			playerTurn = api.getPlayerTurn(playerID);
+			
+			// This is the loser
+			opponentPlayerTurn = api.getPlayerTurn(opponentID);
+			
 			playerTurn.setWon();
-			Server.serverLog.log(Level.INFO, "Player " + playerTurn.getPlayer().getName() + " has won! (Won a tie breaker)");
+			Server.serverLog.log(Level.INFO, "Player " + "(" + playerTurn.getPlayer().getPlayerID() 
+					+ ") " + playerTurn.getPlayer().getName() + " has won! (Won a tie breaker)");
 			opponentPlayerTurn.setLost();
 			winner = true;
 		}
-
-		opponentPlayerTurn.setNotify();
+		else {
+			opponentPlayerTurn.setNotify();
+		}
 		turn++;
 		return true;
 	}
