@@ -410,6 +410,7 @@ public class Server {
 		// Set the new player to interrupt.
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
 		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+		return;
 	}
 
 	/**
@@ -467,6 +468,9 @@ public class Server {
 
 		try {
 			socket.close();
+			for(Socket s : clientSockets){
+				s.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
