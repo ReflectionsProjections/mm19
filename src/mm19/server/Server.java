@@ -490,12 +490,16 @@ public class Server {
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}catch(java.lang.NullPointerException e) {
+			System.out.println("socket is a nullpointer");
 		}
 		for(Socket s : clientSockets){
 			try{
 				s.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+			}catch(java.lang.NullPointerException e) {
+				System.out.println("socket is a nullpointer");
 			}
 		}
 		threadPool.shutdown();
@@ -509,12 +513,26 @@ public class Server {
 		starting = false;
 		try {
 			socket.close();
-			for(Socket s : clientSockets){
-				s.close();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}catch(java.lang.NullPointerException e) {
+			System.out.println("socket is a nullpointer");
 		}
+		for(Socket s : clientSockets){
+			try{
+				s.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}catch(java.lang.NullPointerException e) {
+				System.out.println("socket is a nullpointer");
+			}
+		}
+		JSONObject fail_object = new JSONObject();
+		fail_object.put("winner", "#fail#");
+		addTurnToVisualizerLog(fail_object);
+		winJSON = fail_object;
+		visualizerLog.writeToFile();
+		visualizerLog.close();
 		interruptTimer.cancel();
 		threadPool.shutdown();
 	}
