@@ -488,11 +488,15 @@ public class Server {
 
 		try {
 			socket.close();
-			for(Socket s : clientSockets){
-				s.close();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		for(Socket s : clientSockets){
+			try{
+				s.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		threadPool.shutdown();
 		interruptTimer.cancel();
