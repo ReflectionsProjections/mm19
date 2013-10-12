@@ -37,7 +37,7 @@ def runGame(match_name, name1, name2, run_script1, run_script2):
     except OSError:
         server.terminate()
         server.wait()
-        return {"winner" : """#fail#"""}
+        return """#fail#"""
     try:
         bot2 = Popen(os.path.join(run_script2, "run.sh"),
                      stdout=FNULL,cwd=run_script2)
@@ -46,7 +46,7 @@ def runGame(match_name, name1, name2, run_script1, run_script2):
         bot1.terminate()
         server.terminate()
         server.wait()
-        return {"winner" : """#fail#"""}
+        return """#fail#"""
         
     try:
         server.wait()  # wait for the sever to exit

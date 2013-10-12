@@ -73,7 +73,7 @@ def play_game():
     winner = runGame(ARENA_VISUALIZER_FILE, bot1, bot2, 
                      teams[bot1], teams[bot2])
     print winner
-    if winner["winner"] == """#fail#""":
+    if winner == """#fail#""":
         play_game()
     
 ## blow here is basic web server stuff
