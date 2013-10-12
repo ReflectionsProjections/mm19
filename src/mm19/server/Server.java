@@ -325,7 +325,7 @@ public class Server {
 	 * @param token
 	 *            The token to be authenticated
 	 */
-	public static void sendToPlayer(JSONObject json, String token) {
+	public static synchronized void sendToPlayer(JSONObject json, String token) {
 		// Authenticate the player.
 		int playerID = authenticate(token);
 
@@ -358,7 +358,23 @@ public class Server {
 	 * @param token
 	 *            The token to authenticate
 	 */
-	public static synchronized void submitTurn(JSONObject obj, String token) {
+	public static synchronized void submitTurn(JSONObject obj, String token, boolean quit) {
+		if(quit){
+			int playerID = authenticate(token);
+			int opponentID = api.getCurrOpponentID();
+			interruptTimer.cancel();
+			interruptTimer.purge();
+			interruptTimer = new Timer();
+			PlayerTurn playerTurn = api.getPlayerTurn(playerID);
+			PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+			if (playerID == api.getCurrPlayerID()) {
+				winJSON = playerTurn.winnerJSON();
+			} else{
+				winJSON = opponentTurn.winnerJSON();
+			}
+			shutdown();
+			return;
+		}
 		int playerID = authenticate(token);
 		if (playerID == -1) {
 			serverLog.log(Level.WARNING,
@@ -425,7 +441,7 @@ public class Server {
 	 * @param playerID
 	 *            The player ID of the turn
 	 */
-	private static void sendToAPI(JSONObject obj, int playerID) {
+	private static synchronized void sendToAPI(JSONObject obj, int playerID) {
 		try {
 			api.processTurn(obj, playerID);
 		} catch (APIException e) {
@@ -463,7 +479,7 @@ public class Server {
 	/**
 	 * Shuts down the server and writes the game to the log file
 	 */
-	private static void shutdown() {
+	private static synchronized void shutdown() {
 	    visualizerLog.addTurn(winJSON);	    
 	    visualizerLog.writeToFile();
 		visualizerLog.close();
@@ -472,11 +488,15 @@ public class Server {
 
 		try {
 			socket.close();
-			for(Socket s : clientSockets){
-				s.close();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		for(Socket s : clientSockets){
+			try{
+				s.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		threadPool.shutdown();
 		interruptTimer.cancel();
