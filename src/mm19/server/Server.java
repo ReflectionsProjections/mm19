@@ -67,7 +67,8 @@ public class Server {
 	private static BasicTextEncryptor bte;
 
 	// Interrupts
-	public static final int TURN_TIME_LIMIT = 1000000;
+	public static final int TURN_TIME_LIMIT = 10000;
+	public static final int SETUP_TIME_LIMIT = 120000;
 	private static Timer interruptTimer;
 	
 	// winnerString
@@ -178,6 +179,7 @@ public class Server {
 		serverLog.log(Level.INFO, "Starting server run loop");
 		starting = true;
 		Socket clientSocket = null;
+		interruptTimer.schedule(new ServerStartupFailure(), SETUP_TIME_LIMIT);
 		// Long polling and connecting/authenticating new players as they
 		// connect.
 		while (starting) {
@@ -248,7 +250,6 @@ public class Server {
 				starting = false;
 			}
 		}
-
 	}
 
 	/**
@@ -290,6 +291,9 @@ public class Server {
 	 * Starts the game once enough players have connected
 	 */
 	private static void startGame() {
+		interruptTimer.cancel();
+		interruptTimer.purge();
+		interruptTimer = new Timer();
 		PlayerTurn turn = api.getPlayerTurn(0);
 		turn.setNotify();
 		sendToPlayer(turn.toJSON(), encrypt(playerToken[0]));
@@ -476,6 +480,23 @@ public class Server {
 		}
 		threadPool.shutdown();
 		interruptTimer.cancel();
+	}
+	
+	/**
+	 * Shuts down the server if it runs out of time starting up.
+	 */
+	public static synchronized void startupFailed(){
+		starting = false;
+		try {
+			socket.close();
+			for(Socket s : clientSockets){
+				s.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		interruptTimer.cancel();
+		threadPool.shutdown();
 	}
 
 	/**

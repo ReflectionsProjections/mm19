@@ -29,7 +29,7 @@ import mm19.server.Server;
  */
 
 public class Engine {
-	public static final int TURN_LIMIT = 10000;
+	public static final int TURN_LIMIT = 2000;
 	private API api;
 	private Player[] players;
 	private int turn = 0;
