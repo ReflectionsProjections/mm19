@@ -61,7 +61,7 @@ public class RequestRunnable implements Runnable {
 				//System.out.print("Processed turn");
 				//System.out.println("");
 			}
-
+			Server.submitTurn(null, playerToken, true);
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped.");
 		} catch (IOException e) {
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped. (SocketException)");
