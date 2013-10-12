@@ -24,7 +24,8 @@ path, filename = os.path.split(os.path.abspath(__file__))
 path += "/teams"
 
 def time_to_update():
-    return (time.time() - TIME_SINCE_OF_PULL > HOW_OFTEN_TO_PULL_IN_MIN * 60) 
+    return ((time.time() - TIME_SINCE_OF_PULL) >
+            (HOW_OFTEN_TO_PULL_IN_MIN * 60)) 
 
 # makes sure only the visualizer will be found
 class mmRequstHandler(SimpleHTTPRequestHandler,object):
@@ -58,11 +59,12 @@ def update_repos():
             git_pull(dir_entry_path)
         else:
             print dir_entry_path+" does not have a git repo"
+    global TIME_SINCE_OF_PULL
     TIME_SINCE_OF_PULL= time.time()
             
 
 def play_game():
-    if time_to_update:
+    if time_to_update():
         update_repos()
         qualify()
     bot1,bot2 = random.sample(teams,2)
@@ -89,7 +91,7 @@ def start_web_server():
 
 def qualify():
     global teams
-    teams = qualifyed_teams()
+    teams = qualifyed_teams(False)
 
 def main():
     update_repos()

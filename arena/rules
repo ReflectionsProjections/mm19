@@ -1,6 +1,6 @@
 You must, in your root, make
 	name.txt -> it must be the name you report to be
-	run.sh -> run your team
+	run.sh -> run script for your team's AI. Mark it executable. 
 	
 Your name must not!
 	 Be the same as someOne else.

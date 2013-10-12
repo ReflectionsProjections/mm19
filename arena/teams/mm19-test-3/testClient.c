@@ -20,7 +20,7 @@
 #define HOST "localhost"
 #define PORT "6969"
 
-
+//code for loading a file
 char *loadFile(char *filename)
 {
 	FILE* input = fopen(filename, "rb");
@@ -73,6 +73,7 @@ void *get_in_addr(struct sockaddr *sa)
 
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+
 
 int responseCode(char * str){
 	char * tok = strstr(strstr(str, "responseCode"), ":")+1;
