@@ -75,7 +75,7 @@ def push_repos():
         new_team = os.path.join(path,"teams", "mm19-{}".format(x))
         
         git(new_team, "add", "-u")
-        git(new_team, "commit", "-m", "update jar" )
+        git(new_team, "commit", "-m", "update jar! Again!" )
         git(new_team, "pull")
         git(new_team, "push")
 
