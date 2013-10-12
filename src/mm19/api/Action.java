@@ -21,6 +21,7 @@ public class Action {
 
     public static final String SHOOT_IDENTIFIER = "F";
     public static final String BURST_SHOT_IDENTIFIER = "B";
+    public static final String BURST_ALTERNATE = "BS";
     public static final String SONAR_IDENTIFIER = "S";
     public static final String MOVE_HORIZONTAL_IDENTIFIER = "MH";
     public static final String MOVE_VERTICAL_IDENTIFIER = "MV";
@@ -76,7 +77,7 @@ public class Action {
 	 * @return The enumerated Type
 	 */
     public static Type getTypeByIdentifier(String identifier) {
-        if (identifier.equals(BURST_SHOT_IDENTIFIER)) {
+        if (identifier.equals(BURST_SHOT_IDENTIFIER) || identifier.equals(BURST_ALTERNATE)) {
             return Type.BURST_SHOT;
         } else if (identifier.equals(MOVE_HORIZONTAL_IDENTIFIER)) {
             return Type.MOVE_HORIZONTAL;
