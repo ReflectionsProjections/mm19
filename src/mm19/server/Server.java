@@ -67,7 +67,7 @@ public class Server {
 
     // Interrupts
     public static final int TURN_TIME_LIMIT = 10000;
-    public static final int SETUP_TIME_LIMIT = 120000;
+    public static final int SETUP_TIME_LIMIT = 300000;
     private static Timer interruptTimer;
 
     // winnerString
