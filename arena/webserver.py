@@ -69,7 +69,7 @@ def play_game():
         update_repos()
         qualify()
     bot1,bot2 = random.sample(teams,2)
-    print bot1, "v", bot2
+    print teams[bot1], "v", teams[bot2]
     winner = runGame(ARENA_VISUALIZER_FILE, bot1, bot2, 
                      teams[bot1], teams[bot2])
     print winner
