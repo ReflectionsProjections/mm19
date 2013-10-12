@@ -31,66 +31,63 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Server {
-	// Static constant logger declaration
-	public static final Logger serverLog = Logger.getLogger(Server.class
-			.getName());
+    // Static constant logger declaration
+    public static final Logger serverLog = Logger.getLogger(Server.class.getName());
 
-	// API
-	private static API api;
-	// Server constants for now, configurable later
-	public static final int PORT = 6969;
+    // API
+    private static API api;
+    // Server constants for now, configurable later
+    public static final int PORT = 6969;
 
-	public static final int MAX_THREADS = 2;
-	public static final String LOG_PATH = "server_log.txt";
-	public static final Level LOG_LEVEL = Level.INFO;
+    public static final int MAX_THREADS = 2;
+    public static final String LOG_PATH = "server_log.txt";
+    public static final Level LOG_LEVEL = Level.INFO;
 
-	// Bookkeeping
-	private static boolean[] connected;
-	private static int playersConnected;
-	private static VisualizerLogger visualizerLog = null;
-	private static String visualizerLogURL = "log.out";
+    // Bookkeeping
+    private static boolean[] connected;
+    private static int playersConnected;
+    private static VisualizerLogger visualizerLog = null;
+    private static String visualizerLogURL = "log.out";
 
-	// Sockets
-	private static ServerSocket socket = null;
-	private static Socket[] clientSockets;
+    // Sockets
+    private static ServerSocket socket = null;
+    private static Socket[] clientSockets;
 
-	// Concurrent stuff
-	public static ExecutorService threadPool = null;
-	private static boolean starting = false;
+    // Concurrent stuff
+    public static ExecutorService threadPool = null;
+    private static boolean starting = false;
 
-	// For communication with the connecting client
-	private static BufferedReader in;
-	private static PrintWriter out;
+    // For communication with the connecting client
+    private static BufferedReader in;
+    private static PrintWriter out;
 
-	// Security
-	private static String[] playerToken;
-	private static BasicTextEncryptor bte;
+    // Security
+    private static String[] playerToken;
+    private static BasicTextEncryptor bte;
 
-	// Interrupts
-	public static final int TURN_TIME_LIMIT = 10000;
-	public static final int SETUP_TIME_LIMIT = 120000;
-	private static Timer interruptTimer;
-	
-	// winnerString
-	private static JSONObject winJSON;
+    // Interrupts
+    public static final int TURN_TIME_LIMIT = 10000;
+    public static final int SETUP_TIME_LIMIT = 120000;
+    private static Timer interruptTimer;
 
-	/**
-	 * Starting point for the game.
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-	    
-		// Set up the server, including logging and socket to listen on
-		boolean success = initServer();
-		winJSON = null;
+    // winnerString
+    private static JSONObject winJSON;
 
-		if (!success) {
-			serverLog.log(Level.SEVERE,
-					"Fatal error: unable to start server. Bailing out.");
-			System.exit(1);
-		}
+    /**
+     * Starting point for the game.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
 
+        // Set up the server, including logging and socket to listen on
+        boolean success = initServer();
+        winJSON = null;
+
+        if(!success) {
+            serverLog.log(Level.SEVERE, "Fatal error: unable to start server. Bailing out.");
+            System.exit(1);
+        }
 
         if(args.length < 1) {
             visualizerLog = new VisualizerLogger(Server.visualizerLogURL);
@@ -99,47 +96,46 @@ public class Server {
             visualizerLog = new VisualizerLogger(args[0]);
         }
 
-		// Run the server until the game ends
-		run();
+        // Run the server until the game ends
+        run();
 
-		// End the server and clean up
+        // End the server and clean up
 
-	}
+    }
 
-	/**
-	 * Initialize the server
-	 * 
-	 * @return if the server was properly initialized
-	 */
-	private static boolean initServer() {
+    /**
+     * Initialize the server
+     * 
+     * @return if the server was properly initialized
+     */
+    private static boolean initServer() {
 
-		interruptTimer = new Timer();
-		clientSockets = new Socket[Constants.PLAYER_COUNT];
-		api = API.getAPI();
-		playerToken = new String[Constants.PLAYER_COUNT];
-		for (int i = 0; i < playerToken.length; i++) {
-			playerToken[i] = "";
-		}
+        interruptTimer = new Timer();
+        clientSockets = new Socket[Constants.PLAYER_COUNT];
+        api = API.getAPI();
+        playerToken = new String[Constants.PLAYER_COUNT];
+        for(int i = 0; i < playerToken.length; i++) {
+            playerToken[i] = "";
+        }
 
-		connected = new boolean[Constants.PLAYER_COUNT];
-		for (int i = 0; i < connected.length; i++) {
-			connected[i] = false;
-		}
+        connected = new boolean[Constants.PLAYER_COUNT];
+        for(int i = 0; i < connected.length; i++) {
+            connected[i] = false;
+        }
 
-		bte = new BasicTextEncryptor();
-		bte.setPassword("mm19");
+        bte = new BasicTextEncryptor();
+        bte.setPassword("mm19");
 
-		// Set up to-file logging
+        // Set up to-file logging
         FileHandler fileLogHandler;
-        try
-        {
-            // TRUE -> console is stopped and log is pointed to file; FALSE -> nothing changes
+        try {
+            // TRUE -> console is stopped and log is pointed to file; FALSE ->
+            // nothing changes
             boolean logToFile = false;
-            if(logToFile)
-            {
+            if(logToFile) {
                 fileLogHandler = new FileHandler(LOG_PATH);
                 fileLogHandler.setFormatter(new SimpleFormatter());
-                
+
                 System.out.println("Console logging going down; File logging going up at location " + LOG_PATH);
                 // Stop to-console logging
                 serverLog.setUseParentHandlers(false);
@@ -147,365 +143,367 @@ public class Server {
                 serverLog.addHandler(fileLogHandler);
             }
         }
-        catch(IOException e)
-        {
+        catch(IOException e) {
             serverLog.log(Level.SEVERE, "Fatal error: Unable to start server-to-file logging. Bailing out.");
             System.exit(1); // Does this exit code need to be changed?
         }
 
-		// Set up the socket
-		try {
-			socket = new ServerSocket(PORT);
-			serverLog.log(Level.INFO, "Server listening on port: " + PORT);
-		} catch (IOException e) {
-			serverLog.log(Level.SEVERE, "Failed to open socket on port: "
-					+ PORT, e);
-			return false;
-		}
+        // Set up the socket
+        try {
+            socket = new ServerSocket(PORT);
+            serverLog.log(Level.INFO, "Server listening on port: " + PORT);
+        }
+        catch(IOException e) {
+            serverLog.log(Level.SEVERE, "Failed to open socket on port: " + PORT, e);
+            return false;
+        }
 
-		// Set up the thread pool
-		threadPool = Executors.newFixedThreadPool(MAX_THREADS);
-		return true;
-	}
+        // Set up the thread pool
+        threadPool = Executors.newFixedThreadPool(MAX_THREADS);
+        return true;
+    }
 
-	/**
-	 * Run the server, accept incoming clients and spawn worker threads to
-	 * accept further requests from them.
-	 * 
-	 * Starts the game once enough clients have joined.
-	 */
-	private static void run() {
-		int currPlayerID = -1;
-		serverLog.log(Level.INFO, "Starting server run loop");
-		starting = true;
-		Socket clientSocket = null;
-		interruptTimer.schedule(new ServerStartupFailure(), SETUP_TIME_LIMIT);
-		// Long polling and connecting/authenticating new players as they
-		// connect.
-		while (starting) {
-			try {
-				// Listen for a new connection
-				clientSocket = socket.accept();
+    /**
+     * Run the server, accept incoming clients and spawn worker threads to
+     * accept further requests from them.
+     * 
+     * Starts the game once enough clients have joined.
+     */
+    private static void run() {
+        int currPlayerID = -1;
+        serverLog.log(Level.INFO, "Starting server run loop");
+        starting = true;
+        Socket clientSocket = null;
+        interruptTimer.schedule(new ServerStartupFailure(), SETUP_TIME_LIMIT);
+        // Long polling and connecting/authenticating new players as they
+        // connect.
+        while(starting) {
+            try {
+                // Listen for a new connection
+                clientSocket = socket.accept();
 
-				// players are already connected
-				currPlayerID = getValidPlayerID();
-				if (currPlayerID == -1) {
-					serverLog.log(Level.WARNING,
-							"The server needs to be restarted");
-					continue;
-				}
+                // players are already connected
+                currPlayerID = getValidPlayerID();
+                if(currPlayerID == -1) {
+                    serverLog.log(Level.WARNING, "The server needs to be restarted");
+                    continue;
+                }
 
-				serverLog.log(Level.INFO, "Connection received.");
-				serverLog.log(Level.INFO,
-						"Waiting on player for new player data.");
+                serverLog.log(Level.INFO, "Connection received.");
+                serverLog.log(Level.INFO, "Waiting on player for new player data.");
 
-				in = new BufferedReader(new InputStreamReader(
-						clientSocket.getInputStream()));
-				out = new PrintWriter(clientSocket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-				// Blocks until it gets a response from the client, hopefully a
-				// JSONObject with a playerName key.
-				String s = in.readLine();
+                // Blocks until it gets a response from the client, hopefully a
+                // JSONObject with a playerName key.
+                String s = in.readLine();
 
-				serverLog.log(Level.INFO, "Received player info");
+                serverLog.log(Level.INFO, "Received player info");
 
-				// We can think of something more interesting here, but security
-				// isn't the biggest issue at the moment.
-				String token = "player" + playersConnected;
+                // We can think of something more interesting here, but security
+                // isn't the biggest issue at the moment.
+                String token = "player" + playersConnected;
 
-				try {
-					api.addPlayer(s, encrypt(token));
+                try {
+                    api.addPlayer(s, encrypt(token));
 
-					serverLog.log(Level.INFO,
-							"Successfully initialized player!");
-					clientSockets[currPlayerID] = clientSocket;
-					playerToken[currPlayerID] = token;
-					connected[currPlayerID] = true;
+                    serverLog.log(Level.INFO, "Successfully initialized player!");
+                    clientSockets[currPlayerID] = clientSocket;
+                    playerToken[currPlayerID] = token;
+                    connected[currPlayerID] = true;
 
-					serverLog.log(Level.INFO, "Players connected: "
-							+ ++playersConnected);
+                    serverLog.log(Level.INFO, "Players connected: " + ++playersConnected);
 
-					RequestRunnable task = new RequestRunnable(clientSocket,
-							encrypt(playerToken[currPlayerID]), currPlayerID);
-					threadPool.execute(task);
+                    RequestRunnable task = new RequestRunnable(clientSocket, encrypt(playerToken[currPlayerID]), currPlayerID);
+                    threadPool.execute(task);
 
-					if (api.getStarted()) {
-						startGame();
-						starting = false;
-					}
+                    if(api.getStarted()) {
+                        startGame();
+                        starting = false;
+                    }
 
-				} catch (APIException e) {
-					serverLog
-							.log(Level.INFO,
-									"Couldn't initialize ships for player, dropping connection");
-					PlayerTurn turn = new PlayerTurn();
-					turn.addError(e.getMessage());
-					out.println(turn.toJSON());
-					out.flush();
-					continue;
-				}
-			} catch (IOException e) {
-				serverLog.log(Level.SEVERE, "Unexpected error accepting "
-						+ "client connection.", e);
-				starting = false;
-			}
-		}
-	}
+                }
+                catch(APIException e) {
+                    serverLog.log(Level.INFO, "Couldn't initialize ships for player, dropping connection");
+                    PlayerTurn turn = new PlayerTurn();
+                    turn.addError(e.getMessage());
+                    out.println(turn.toJSON());
+                    out.flush();
+                    continue;
+                }
+            }
+            catch(IOException e) {
+                serverLog.log(Level.SEVERE, "Unexpected error accepting " + "client connection.", e);
+                starting = false;
+            }
+        }
+    }
 
-	/**
-	 * Get valid playerID for the connecting client
-	 * 
-	 * @return A valid player ID, -1 if no more players can join.
-	 */
-	private static int getValidPlayerID() {
-		if (!connected[0])
-			return 0;
-		else if (!connected[1])
-			return 1;
+    /**
+     * Get valid playerID for the connecting client
+     * 
+     * @return A valid player ID, -1 if no more players can join.
+     */
+    private static int getValidPlayerID() {
+        if(!connected[0]) return 0;
+        else if(!connected[1]) return 1;
 
-		return -1;
-	}
+        return -1;
+    }
 
-	/**
-	 * Authenticates a player by returning the player ID associated with it
-	 * 
-	 * @param token
-	 *            The token to be authenticated
-	 * @return The player ID, -1 if authentication failed
-	 */
-	private static int authenticate(String token) {
-		if (connected[0]) {
-			if (bte.decrypt(token).equals(playerToken[0])) {
-				return 0;
-			}
-		}
-		if (connected[1]) {
-			if (bte.decrypt(token).equals(playerToken[1])) {
-				return 1;
-			}
-		}
-		return -1;
-	}
+    /**
+     * Authenticates a player by returning the player ID associated with it
+     * 
+     * @param token
+     *            The token to be authenticated
+     * @return The player ID, -1 if authentication failed
+     */
+    private static int authenticate(String token) {
+        if(connected[0]) {
+            if(bte.decrypt(token).equals(playerToken[0])) {
+                return 0;
+            }
+        }
+        if(connected[1]) {
+            if(bte.decrypt(token).equals(playerToken[1])) {
+                return 1;
+            }
+        }
+        return -1;
+    }
 
-	/**
-	 * Starts the game once enough players have connected
-	 */
-	private static void startGame() {
-		interruptTimer.cancel();
-		interruptTimer.purge();
-		interruptTimer = new Timer();
-		PlayerTurn turn = api.getPlayerTurn(0);
-		turn.setNotify();
-		sendToPlayer(turn.toJSON(), encrypt(playerToken[0]));
-		turn.resetTurn();
+    /**
+     * Starts the game once enough players have connected
+     */
+    private static void startGame() {
+        interruptTimer.cancel();
+        interruptTimer.purge();
+        interruptTimer = new Timer();
+        PlayerTurn turn = api.getPlayerTurn(0);
+        turn.setNotify();
+        sendToPlayer(turn.toJSON(), encrypt(playerToken[0]));
+        turn.resetTurn();
 
-		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
-		
-		// This line schedules the interrupts
-		//interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
-	}
+        ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
 
-	/**
-	 * Encrypts the string, used for encrypting tokens
-	 * 
-	 * @param s
-	 *            The string to be encrypted
-	 * @return The encrypted string
-	 */
-	private static String encrypt(String s) {
-		return bte.encrypt(s);
-	}
+        // This line schedules the interrupts
+        // interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+    }
 
-	/**
-	 * Send a JSON object to a client, which is determined by authenticating the
-	 * token
-	 * 
-	 * @param json
-	 *            The JSON object to be sent
-	 * @param token
-	 *            The token to be authenticated
-	 */
-	public static void sendToPlayer(JSONObject json, String token) {
-		// Authenticate the player.
-		int playerID = authenticate(token);
+    /**
+     * Encrypts the string, used for encrypting tokens
+     * 
+     * @param s
+     *            The string to be encrypted
+     * @return The encrypted string
+     */
+    private static String encrypt(String s) {
+        return bte.encrypt(s);
+    }
 
-		if (playerID == -1) {
-			serverLog
-					.log(Level.WARNING,
-							"Couldn't authenticate player when trying to send a message");
-			return;
-		}
+    /**
+     * Send a JSON object to a client, which is determined by authenticating the
+     * token
+     * 
+     * @param json
+     *            The JSON object to be sent
+     * @param token
+     *            The token to be authenticated
+     */
+    public static void sendToPlayer(JSONObject json, String token) {
+        // Authenticate the player.
+        int playerID = authenticate(token);
 
-		try {
-			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
-					true);
-			out.println(json);
-			out.flush();
+        if(playerID == -1) {
+            serverLog.log(Level.WARNING, "Couldn't authenticate player when trying to send a message");
+            return;
+        }
 
-		} catch (IOException e) {
-			serverLog.log(Level.WARNING, "Error communicating with player "
-					+ playerID);
-			e.printStackTrace();
-		}
-	}
+        try {
+            out = new PrintWriter(clientSockets[playerID].getOutputStream(), true);
+            out.println(json);
+            out.flush();
 
-	/**
-	 * Called from RequestRunnable when a client submits a turn, sends to the
-	 * API for further handling and reacts accordingly.
-	 * 
-	 * @param obj
-	 *            The turn to submit
-	 * @param token
-	 *            The token to authenticate
-	 */
-	public static synchronized void submitTurn(JSONObject obj, String token) {
-		int playerID = authenticate(token);
-		if (playerID == -1) {
-			serverLog.log(Level.WARNING,
-					"Player not authenticated when trying to send to API");
-			return;
-		}
+        }
+        catch(IOException e) {
+            serverLog.log(Level.WARNING, "Error communicating with player " + playerID);
+            e.printStackTrace();
+        }
+    }
 
-		// Rejecting the player's request because it's not his turn.
-		if (playerID != api.getCurrPlayerID()) {
-			PlayerTurn turn = api.getPlayerTurn(playerID);
-			turn.addError("It is not your turn!");
-			turn.setError();
-			sendToPlayer(turn.toJSON(), token);
-			turn.resetTurn();
-			return;
-		}
+    /**
+     * Called from RequestRunnable when a client submits a turn, sends to the
+     * API for further handling and reacts accordingly.
+     * 
+     * @param obj
+     *            The turn to submit
+     * @param token
+     *            The token to authenticate
+     */
+    public static synchronized void submitTurn(JSONObject obj, String token) {
+        int playerID = authenticate(token);
+        if(playerID == -1) {
+            serverLog.log(Level.WARNING, "Player not authenticated when trying to send to API");
+            return;
+        }
 
-		interruptTimer.cancel();
-		interruptTimer.purge();
-		interruptTimer = new Timer();
+        // Rejecting the player's request because it's not his turn.
+        if(playerID != api.getCurrPlayerID()) {
+            PlayerTurn turn = api.getPlayerTurn(playerID);
+            turn.addError("It is not your turn!");
+            turn.setError();
+            sendToPlayer(turn.toJSON(), token);
+            turn.resetTurn();
+            return;
+        }
 
-		int opponentID = api.getCurrOpponentID();
+        interruptTimer.cancel();
+        interruptTimer.purge();
+        interruptTimer = new Timer();
 
-		// Once you call sendToAPI, "playerID" and "opponentID" are switched,
-		// since the turn switches, which is why playerID and opponentID are
-		// preserved beforehand.
-		sendToAPI(obj, playerID);
+        int opponentID = api.getCurrOpponentID();
 
-		PlayerTurn playerTurn = api.getPlayerTurn(playerID);
-		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+        // Once you call sendToAPI, "playerID" and "opponentID" are switched,
+        // since the turn switches, which is why playerID and opponentID are
+        // preserved beforehand.
+        sendToAPI(obj, playerID);
 
-		// Adding turn to visualizer log
-		try {
-			visualizerLog.addTurn(playerTurn.getLoggingJSON());//toLoggingJSON());//
-		} catch (JSONException e) {
-			
-		}
-		if(playerTurn.hasWon() || playerTurn.hasLost()){
+        PlayerTurn playerTurn = api.getPlayerTurn(playerID);
+        PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
+
+        // Adding turn to visualizer log
+        try {
+            visualizerLog.addTurn(playerTurn.getLoggingJSON());// toLoggingJSON());//
+        }
+        catch(JSONException e) {
+
+        }
+        if(playerTurn.hasWon() || playerTurn.hasLost()) {
             if(playerTurn.hasWon()) winJSON = playerTurn.winnerJSON();
             else winJSON = opponentTurn.winnerJSON();
         }
 
-		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
-		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
+        sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
+        sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
 
-		playerTurn.resetTurn();
-		opponentTurn.resetTurn();
+        playerTurn.resetTurn();
+        opponentTurn.resetTurn();
 
-		if (api.getWinner()) {
-			shutdown();
-			return;
-		}
-		// Set the new player to interrupt.
-		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
-		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
-		return;
-	}
+        if(api.getWinner()) {
+            shutdown();
+            return;
+        }
+        // Set the new player to interrupt.
+        ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
+        interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+        return;
+    }
 
-	/**
-	 * Sends information (a turn) to the API for processing
-	 * 
-	 * @param obj
-	 *            The turn to be processed
-	 * @param playerID
-	 *            The player ID of the turn
-	 */
-	private static void sendToAPI(JSONObject obj, int playerID) {
-		try {
-			api.processTurn(obj, playerID);
-		} catch (APIException e) {
-			api.getPlayerTurn(playerID).addError(e.getMessage());
-		}
-	}
+    /**
+     * Sends information (a turn) to the API for processing
+     * 
+     * @param obj
+     *            The turn to be processed
+     * @param playerID
+     *            The player ID of the turn
+     */
+    private static void sendToAPI(JSONObject obj, int playerID) {
+        try {
+            api.processTurn(obj, playerID);
+        }
+        catch(APIException e) {
+            api.getPlayerTurn(playerID).addError(e.getMessage());
+        }
+    }
 
-	/**
-	 * Called from a ServerInterruptTask when the timer goes off, interrupts a
-	 * current player and sends him a message for taking too long.
-	 * 
-	 * @param playerID
-	 *            The player to interrupt
-	 */
-	public static synchronized void interruptPlayer(int playerID) {
-		int opponentID = api.getCurrOpponentID();
+    /**
+     * Called from a ServerInterruptTask when the timer goes off, interrupts a
+     * current player and sends him a message for taking too long.
+     * 
+     * @param playerID
+     *            The player to interrupt
+     */
+    public static synchronized void interruptPlayer(int playerID) {
+        int opponentID = api.getCurrOpponentID();
 
-		// This will switch the player/opponent IDs
-		api.notifyInterrupt();
+        // This will switch the player/opponent IDs
+        api.notifyInterrupt();
 
-		PlayerTurn turn = api.getPlayerTurn(playerID);
-		turn.setInterrupt();
-		sendToPlayer(turn.toJSON(), encrypt(playerToken[playerID]));
-		turn.resetTurn();
+        PlayerTurn turn = api.getPlayerTurn(playerID);
+        turn.setInterrupt();
+        sendToPlayer(turn.toJSON(), encrypt(playerToken[playerID]));
+        turn.resetTurn();
 
-		turn = api.getPlayerTurn(opponentID);
-		turn.setNotify();
-		sendToPlayer(turn.toJSON(), encrypt(playerToken[opponentID]));
-		turn.resetTurn();
+        turn = api.getPlayerTurn(opponentID);
+        turn.setNotify();
+        sendToPlayer(turn.toJSON(), encrypt(playerToken[opponentID]));
+        turn.resetTurn();
 
-		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
-		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
-	}
+        ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
+        interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+    }
 
-	/**
-	 * Shuts down the server and writes the game to the log file
-	 */
-	private static void shutdown() {
-	    visualizerLog.addTurn(winJSON);	    
-	    visualizerLog.writeToFile();
-		visualizerLog.close();
+    /**
+     * Shuts down the server and writes the game to the log file
+     */
+    private static void shutdown() {
+        visualizerLog.addTurn(winJSON);
+        visualizerLog.writeToFile();
+        visualizerLog.close();
 
-		starting = false;
+        starting = false;
 
-		try {
-			socket.close();
-			for(Socket s : clientSockets){
-				s.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		threadPool.shutdown();
-		interruptTimer.cancel();
-	}
-	
-	/**
-	 * Shuts down the server if it runs out of time starting up.
-	 */
-	public static synchronized void startupFailed(){
-		starting = false;
-		try {
-			socket.close();
-			for(Socket s : clientSockets){
-				s.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		interruptTimer.cancel();
-		threadPool.shutdown();
-	}
+        try {
+            socket.close();
+            for(Socket s : clientSockets) {
+                s.close();
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        threadPool.shutdown();
+        interruptTimer.cancel();
+    }
 
-	/**
-	 * Adds a turn to the visualizer log
-	 * 
-	 * @param turn
-	 *            The turn to add
-	 */
-	public static void addTurnToVisualizerLog(JSONObject turn) {
-		visualizerLog.addTurn(turn);
-	}
+    /**
+     * Shuts down the server if it runs out of time starting up.
+     */
+    public static synchronized void startupFailed() {
+        starting = false;
+        try {
+            socket.close();
+            for(Socket s : clientSockets) {
+                s.close();
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        catch(java.lang.NullPointerException e) {
+            System.out.println("da is s.close() nullpointer");
+        }
+
+        JSONObject fail_object = new JSONObject();
+        fail_object.put("winner", "#fail#");
+
+        addTurnToVisualizerLog(fail_object);
+        winJSON = fail_object;
+
+        visualizerLog.writeToFile();
+        visualizerLog.close();
+        interruptTimer.cancel();
+        threadPool.shutdown();
+    }
+
+    /**
+     * Adds a turn to the visualizer log
+     * 
+     * @param turn
+     *            The turn to add
+     */
+    public static void addTurnToVisualizerLog(JSONObject turn) {
+        visualizerLog.addTurn(turn);
+    }
 }
