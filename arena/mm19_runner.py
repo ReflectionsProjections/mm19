@@ -23,12 +23,6 @@ def testGame(name, run_script):
     return (winner == name)
 
 
-def git_pull(git_path): 
-     fetch = Popen(["git", "fetch", "--all"], cwd=git_path)
-     fetch.wait()
-     reset = Popen(["git", "reset", "--hard", "origin/master"], cwd=git_path)
-     reset.wait()
-
 def runGame(match_name, name1, name2, run_script1, run_script2):
     """
     runs this years game

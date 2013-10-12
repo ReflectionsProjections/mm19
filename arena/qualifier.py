@@ -21,14 +21,14 @@ def alarm_handler(signum, frame):
 signal.signal(signal.SIGALRM, alarm_handler)
 
 
-def add_team(team, name_file, team_dir):
+def add_team(team, name_file, team_dir,testGame):
     with open(name_file) as f:
         name = f.readlines()[0].rstrip()
     if name in teams:
         print "error the team "+team+" could not be added"
         print name+" has aready been used"
         return
-    if qualify(name, team_dir):
+    if not testGame or equalify(name, team_dir):
         teams[name] = team_dir
     else:
         print name+" failed to qualify"
@@ -44,7 +44,7 @@ def qualify(name, team_dir):
         print name + " timed out"
         return False
 
-def qualifyed_teams():
+def qualifyed_teams(testGame=True):
     for dir_entry in os.listdir(path):
         dir_entry_path = os.path.join(path, dir_entry)
         files = os.listdir(dir_entry_path)
@@ -52,7 +52,7 @@ def qualifyed_teams():
             if "run.sh" in files:
                 add_team(dir_entry,
                          os.path.join(dir_entry_path, "name.txt"),
-                         dir_entry_path)
+                         dir_entry_path, testGame)
             else:
                 print "error missing run.sh for entry "+dir_entry
         else:
