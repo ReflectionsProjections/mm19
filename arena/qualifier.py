@@ -28,7 +28,7 @@ def add_team(team, name_file, team_dir,testGame):
         print "error the team "+team+" could not be added"
         print name+" has aready been used"
         return
-    if not testGame or equalify(name, team_dir):
+    if not testGame or qualify(name, team_dir):
         teams[name] = team_dir
     else:
         print name+" failed to qualify"
