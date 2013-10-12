@@ -351,10 +351,10 @@ public class Server {
             PlayerTurn playerTurn = api.getPlayerTurn(playerID);
             PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
             if(playerID == api.getCurrPlayerID()) {
-                winJSON = playerTurn.winnerJSON();
+                winJSON = opponentTurn.winnerJSON();
             }
             else {
-                winJSON = opponentTurn.winnerJSON();
+                winJSON = playerTurn.winnerJSON();
             }
             shutdown();
             return;
