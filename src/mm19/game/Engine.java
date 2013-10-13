@@ -68,15 +68,15 @@ public class Engine {
 		int p2Health = 0;
 		ArrayList<Ship> ships = p1.getBoard().getShips();
 		for (Ship ship : ships) {
-			if (ship.canGenerateResources()) {
+			//if (ship.canGenerateResources()) {
 				p1Health += ship.getHealth();
-			}
+			//}
 		}
 		ships = p2.getBoard().getShips();
 		for (Ship ship : ships) {
-			if (ship.canGenerateResources()) {
+			//if (ship.canGenerateResources()) {
 				p2Health += ship.getHealth();
-			}
+			//}
 		}
 		if (p1Health > p2Health)
 			return p1;
