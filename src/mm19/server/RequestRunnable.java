@@ -41,33 +41,32 @@ public class RequestRunnable implements Runnable {
 		Boolean running = true;
 		try {
 			while (running) {
-
 				in = new BufferedReader(new InputStreamReader(
 						clientSocket.getInputStream()));
 
 				String msg = in.readLine();
-				//System.out.println("Recieved turn");
 				if (msg == null) {
 					running = false;
 					in.close();
 					break;
 				}
 				
-				mutex.lock();
-				JSONObject obj = new JSONObject(msg);
-				mutex.unlock();
-				
-				Server.submitTurn(obj, playerToken, false);
-				//System.out.print("Processed turn");
-				//System.out.println("");
+				try {
+					mutex.lock();
+					JSONObject obj = new JSONObject(msg);
+					Server.submitTurn(obj, playerToken, false);
+				} catch (JSONException e) {
+					Server.serverLog.log(Level.WARNING, "Player " + playerID + " has JSON error.");
+				} finally {
+					mutex.unlock();
+				}
+
 			}
 			Server.submitTurn(null, playerToken, true);
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped.");
 		} catch (IOException e) {
 			Server.serverLog.log(Level.INFO, "Player " + playerID + " dropped. (SocketException)");
 			Server.submitTurn(null, playerToken, true);
-		} catch (JSONException e) {
-			e.printStackTrace();
 		}
 		if (in != null) {
 			try {
